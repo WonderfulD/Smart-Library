@@ -1,0 +1,61 @@
+package com.ruoyi.borrow.service;
+
+import java.util.List;
+import com.ruoyi.borrow.domain.BookBorrowing;
+
+/**
+ * 图书借阅信息Service接口
+ * 
+ * @author ruoyi
+ * @date 2024-03-12
+ */
+public interface IBookBorrowingService 
+{
+    /**
+     * 查询图书借阅信息
+     * 
+     * @param borrowId 图书借阅信息主键
+     * @return 图书借阅信息
+     */
+    public BookBorrowing selectBookBorrowingByBorrowId(Long borrowId);
+
+    /**
+     * 查询图书借阅信息列表
+     * 
+     * @param bookBorrowing 图书借阅信息
+     * @return 图书借阅信息集合
+     */
+    public List<BookBorrowing> selectBookBorrowingList(BookBorrowing bookBorrowing);
+
+    /**
+     * 新增图书借阅信息
+     * 
+     * @param bookBorrowing 图书借阅信息
+     * @return 结果
+     */
+    public int insertBookBorrowing(BookBorrowing bookBorrowing);
+
+    /**
+     * 修改图书借阅信息
+     * 
+     * @param bookBorrowing 图书借阅信息
+     * @return 结果
+     */
+    public int updateBookBorrowing(BookBorrowing bookBorrowing);
+
+    /**
+     * 批量删除图书借阅信息
+     * 
+     * @param borrowIds 需要删除的图书借阅信息主键集合
+     * @return 结果
+     */
+    public int deleteBookBorrowingByBorrowIds(Long[] borrowIds);
+
+    /**
+     * 删除图书借阅信息信息
+     * 
+     * @param borrowId 图书借阅信息主键
+     * @return 结果
+     */
+    public int deleteBookBorrowingByBorrowId(Long borrowId);
+}

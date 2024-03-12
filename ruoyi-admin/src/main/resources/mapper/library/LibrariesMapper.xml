@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.library.mapper.LibrariesMapper">
+    
+    <resultMap type="Libraries" id="LibrariesResult">
+        <result property="libraryId"    column="library_id"    />
+        <result property="name"    column="name"    />
+        <result property="address"    column="address"    />
+        <result property="contactInfo"    column="contact_info"    />
+    </resultMap>
+
+    <sql id="selectLibrariesVo">
+        select library_id, name, address, contact_info from Libraries
+    </sql>
+
+    <select id="selectLibrariesList" parameterType="Libraries" resultMap="LibrariesResult">
+        <include refid="selectLibrariesVo"/>
+        <where>  
+        </where>
+    </select>
+    
+    <select id="selectLibrariesByLibraryId" parameterType="Long" resultMap="LibrariesResult">
+        <include refid="selectLibrariesVo"/>
+        where library_id = #{libraryId}
+    </select>
+        
+    <insert id="insertLibraries" parameterType="Libraries" useGeneratedKeys="true" keyProperty="libraryId">
+        insert into Libraries
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="name != null and name != ''">name,</if>
+            <if test="address != null and address != ''">address,</if>
+            <if test="contactInfo != null and contactInfo != ''">contact_info,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="name != null and name != ''">#{name},</if>
+            <if test="address != null and address != ''">#{address},</if>
+            <if test="contactInfo != null and contactInfo != ''">#{contactInfo},</if>
+         </trim>
+    </insert>
+
+    <update id="updateLibraries" parameterType="Libraries">
+        update Libraries
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="address != null and address != ''">address = #{address},</if>
+            <if test="contactInfo != null and contactInfo != ''">contact_info = #{contactInfo},</if>
+        </trim>
+        where library_id = #{libraryId}
+    </update>
+
+    <delete id="deleteLibrariesByLibraryId" parameterType="Long">
+        delete from Libraries where library_id = #{libraryId}
+    </delete>
+
+    <delete id="deleteLibrariesByLibraryIds" parameterType="String">
+        delete from Libraries where library_id in 
+        <foreach item="libraryId" collection="array" open="(" separator="," close=")">
+            #{libraryId}
+        </foreach>
+    </delete>
+</mapper>

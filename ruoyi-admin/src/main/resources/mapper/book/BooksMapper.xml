@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.book.mapper.BooksMapper">
+    
+    <resultMap type="Books" id="BooksResult">
+        <result property="bookId"    column="book_id"    />
+        <result property="libraryId"    column="library_id"    />
+        <result property="title"    column="title"    />
+        <result property="author"    column="author"    />
+        <result property="isbn"    column="isbn"    />
+        <result property="publisher"    column="publisher"    />
+        <result property="publishDate"    column="publish_date"    />
+        <result property="category"    column="category"    />
+        <result property="description"    column="description"    />
+        <result property="language"    column="language"    />
+        <result property="pages"    column="pages"    />
+        <result property="coverUrl"    column="cover_url"    />
+        <result property="edition"    column="edition"    />
+        <result property="status"    column="status"    />
+    </resultMap>
+
+    <sql id="selectBooksVo">
+        select book_id, library_id, title, author, isbn, publisher, publish_date, category, description, language, pages, cover_url, edition, status from Books
+    </sql>
+
+    <select id="selectBooksList" parameterType="Books" resultMap="BooksResult">
+        <include refid="selectBooksVo"/>
+        <where>  
+            <if test="bookId != null "> and book_id = #{bookId}</if>
+            <if test="title != null  and title != ''"> and title = #{title}</if>
+            <if test="author != null  and author != ''"> and author = #{author}</if>
+            <if test="isbn != null  and isbn != ''"> and isbn = #{isbn}</if>
+            <if test="publisher != null  and publisher != ''"> and publisher = #{publisher}</if>
+            <if test="category != null  and category != ''"> and category = #{category}</if>
+            <if test="status != null "> and status = #{status}</if>
+        </where>
+    </select>
+    
+    <select id="selectBooksByBookId" parameterType="Long" resultMap="BooksResult">
+        <include refid="selectBooksVo"/>
+        where book_id = #{bookId}
+    </select>
+        
+    <insert id="insertBooks" parameterType="Books" useGeneratedKeys="true" keyProperty="bookId">
+        insert into Books
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="libraryId != null">library_id,</if>
+            <if test="title != null and title != ''">title,</if>
+            <if test="author != null and author != ''">author,</if>
+            <if test="isbn != null">isbn,</if>
+            <if test="publisher != null">publisher,</if>
+            <if test="publishDate != null">publish_date,</if>
+            <if test="category != null">category,</if>
+            <if test="description != null">description,</if>
+            <if test="language != null">language,</if>
+            <if test="pages != null">pages,</if>
+            <if test="coverUrl != null">cover_url,</if>
+            <if test="edition != null">edition,</if>
+            <if test="status != null">status,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="libraryId != null">#{libraryId},</if>
+            <if test="title != null and title != ''">#{title},</if>
+            <if test="author != null and author != ''">#{author},</if>
+            <if test="isbn != null">#{isbn},</if>
+            <if test="publisher != null">#{publisher},</if>
+            <if test="publishDate != null">#{publishDate},</if>
+            <if test="category != null">#{category},</if>
+            <if test="description != null">#{description},</if>
+            <if test="language != null">#{language},</if>
+            <if test="pages != null">#{pages},</if>
+            <if test="coverUrl != null">#{coverUrl},</if>
+            <if test="edition != null">#{edition},</if>
+            <if test="status != null">#{status},</if>
+         </trim>
+    </insert>
+
+    <update id="updateBooks" parameterType="Books">
+        update Books
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="libraryId != null">library_id = #{libraryId},</if>
+            <if test="title != null and title != ''">title = #{title},</if>
+            <if test="author != null and author != ''">author = #{author},</if>
+            <if test="isbn != null">isbn = #{isbn},</if>
+            <if test="publisher != null">publisher = #{publisher},</if>
+            <if test="publishDate != null">publish_date = #{publishDate},</if>
+            <if test="category != null">category = #{category},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="language != null">language = #{language},</if>
+            <if test="pages != null">pages = #{pages},</if>
+            <if test="coverUrl != null">cover_url = #{coverUrl},</if>
+            <if test="edition != null">edition = #{edition},</if>
+            <if test="status != null">status = #{status},</if>
+        </trim>
+        where book_id = #{bookId}
+    </update>
+
+    <delete id="deleteBooksByBookId" parameterType="Long">
+        delete from Books where book_id = #{bookId}
+    </delete>
+
+    <delete id="deleteBooksByBookIds" parameterType="String">
+        delete from Books where book_id in 
+        <foreach item="bookId" collection="array" open="(" separator="," close=")">
+            #{bookId}
+        </foreach>
+    </delete>
+</mapper>

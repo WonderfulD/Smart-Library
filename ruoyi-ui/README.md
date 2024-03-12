@@ -15,6 +15,9 @@ npm install --registry=https://registry.npmmirror.com
 
 # 启动服务
 npm run dev
+
+# 设置 `Node.js` 加密策略，在运行构建脚本之前在终端中设置：
+set NODE_OPTIONS=--openssl-legacy-provider
 ```
 
 浏览器访问 http://localhost:80
