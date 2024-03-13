@@ -1,15 +1,16 @@
 package com.ruoyi.common.core.domain.entity;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.ruoyi.common.annotation.Excel;
+import com.ruoyi.common.core.domain.BaseEntity;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
-import com.ruoyi.common.core.domain.BaseEntity;
-
+import java.util.ArrayList;
+import java.util.List;
 /**
  * 部门表 sys_dept
  * 
@@ -20,6 +21,7 @@ public class SysDept extends BaseEntity
     private static final long serialVersionUID = 1L;
 
     /** 部门ID */
+    @Excel(name = "图书馆id")
     private Long deptId;
 
     /** 父部门ID */
@@ -29,19 +31,47 @@ public class SysDept extends BaseEntity
     private String ancestors;
 
     /** 部门名称 */
+    @Excel(name = "图书馆名称")
     private String deptName;
 
     /** 显示顺序 */
     private Integer orderNum;
 
     /** 负责人 */
+    @Excel(name = "负责人")
     private String leader;
 
     /** 联系电话 */
+    @Excel(name = "联系电话")
     private String phone;
 
     /** 邮箱 */
+    @Excel(name = "邮箱")
     private String email;
+
+    /** 图书馆地址 */
+    @Excel(name = "图书馆地址")
+    private String address;
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getContactInfo() {
+        return contactInfo;
+    }
+
+    public void setContactInfo(String contactInfo) {
+        this.contactInfo = contactInfo;
+    }
+
+    /** 图书馆联系信息 */
+    @Excel(name = "图书馆联系信息")
+    private String contactInfo;
 
     /** 部门状态:0正常,1停用 */
     private String status;

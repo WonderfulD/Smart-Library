@@ -55,7 +55,7 @@ public class SysPermissionService
     public Set<String> getMenuPermission(SysUser user)
     {
         Set<String> perms = new HashSet<String>();
-        // 管理员拥有所有权限
+        // 管理员拥有所有权限 通过userId判断
         if (user.isAdmin())
         {
             perms.add("*:*:*");

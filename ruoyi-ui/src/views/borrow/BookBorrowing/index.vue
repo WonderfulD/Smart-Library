@@ -9,18 +9,18 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="书籍ID" prop="bookId">
+      <el-form-item label="书籍编号" prop="bookId">
         <el-input
           v-model="queryParams.bookId"
-          placeholder="请输入书籍ID"
+          placeholder="请输入书籍编号"
           clearable
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="读者ID" prop="readerId">
+      <el-form-item label="读者号" prop="readerId">
         <el-input
           v-model="queryParams.readerId"
-          placeholder="请输入读者ID"
+          placeholder="请输入读者号"
           clearable
           @keyup.enter.native="handleQuery"
         />
@@ -134,7 +134,7 @@
         </template>
       </el-table-column>
     </el-table>
-    
+
     <pagination
       v-show="total>0"
       :total="total"

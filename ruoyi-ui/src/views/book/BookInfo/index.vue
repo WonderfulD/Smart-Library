@@ -1,10 +1,10 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="图书ID" prop="bookId">
+    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="100px">
+      <el-form-item label="图书编号" prop="bookId">
         <el-input
           v-model="queryParams.bookId"
-          placeholder="请输入图书ID"
+          placeholder="请输入图书编号"
           clearable
           @keyup.enter.native="handleQuery"
         />
@@ -145,7 +145,7 @@
         </template>
       </el-table-column>
     </el-table>
-    
+
     <pagination
       v-show="total>0"
       :total="total"

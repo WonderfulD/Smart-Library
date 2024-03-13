@@ -1,6 +1,22 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
+    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="90px">
+      <el-form-item label="图书馆编号" prop="deptId">
+        <el-input
+          v-model="queryParams.deptId"
+          placeholder="请输入图书馆编号"
+          clearable
+          @keyup.enter.native="handleQuery"
+        />
+      </el-form-item>
+      <el-form-item label="图书馆名称" prop="deptName">
+        <el-input
+          v-model="queryParams.deptName"
+          placeholder="请输入图书馆名称"
+          clearable
+          @keyup.enter.native="handleQuery"
+        />
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
@@ -10,53 +26,24 @@
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button
-          type="primary"
-          plain
-          icon="el-icon-plus"
-          size="mini"
-          @click="handleAdd"
-          v-hasPermi="['library:LibraryInfo:add']"
-        >新增</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="success"
-          plain
-          icon="el-icon-edit"
-          size="mini"
-          :disabled="single"
-          @click="handleUpdate"
-          v-hasPermi="['library:LibraryInfo:edit']"
-        >修改</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="danger"
-          plain
-          icon="el-icon-delete"
-          size="mini"
-          :disabled="multiple"
-          @click="handleDelete"
-          v-hasPermi="['library:LibraryInfo:remove']"
-        >删除</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
           type="warning"
           plain
           icon="el-icon-download"
           size="mini"
           @click="handleExport"
-          v-hasPermi="['library:LibraryInfo:export']"
+          v-hasPermi="['system:dept:export']"
         >导出</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
-    <el-table v-loading="loading" :data="LibraryInfoList" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" :data="deptList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="图书馆ID" align="center" prop="libraryId" />
-      <el-table-column label="图书馆名称" align="center" prop="name" />
+      <el-table-column label="图书馆id" align="center" prop="deptId" />
+      <el-table-column label="图书馆名称" align="center" prop="deptName" />
+      <el-table-column label="负责人" align="center" prop="leader" />
+      <el-table-column label="联系电话" align="center" prop="phone" />
+      <el-table-column label="邮箱" align="center" prop="email" />
       <el-table-column label="图书馆地址" align="center" prop="address" />
       <el-table-column label="图书馆联系信息" align="center" prop="contactInfo" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
@@ -64,21 +51,13 @@
           <el-button
             size="mini"
             type="text"
-            icon="el-icon-edit"
-            @click="handleUpdate(scope.row)"
-            v-hasPermi="['library:LibraryInfo:edit']"
-          >修改</el-button>
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-delete"
-            @click="handleDelete(scope.row)"
-            v-hasPermi="['library:LibraryInfo:remove']"
-          >删除</el-button>
+            icon="el-icon-phone"
+            @click="handleContact(scope.row)"
+          >联系他们</el-button>
         </template>
       </el-table-column>
     </el-table>
-    
+
     <pagination
       v-show="total>0"
       :total="total"
@@ -90,15 +69,6 @@
     <!-- 添加或修改图书馆信息对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="图书馆名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入图书馆名称" />
-        </el-form-item>
-        <el-form-item label="图书馆地址" prop="address">
-          <el-input v-model="form.address" type="textarea" placeholder="请输入内容" />
-        </el-form-item>
-        <el-form-item label="图书馆联系信息" prop="contactInfo">
-          <el-input v-model="form.contactInfo" placeholder="请输入图书馆联系信息" />
-        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -109,10 +79,10 @@
 </template>
 
 <script>
-import { listLibraryInfo, getLibraryInfo, delLibraryInfo, addLibraryInfo, updateLibraryInfo } from "@/api/library/LibraryInfo";
+import {listLibrary, listDept, getDept, delDept, addDept, updateDept } from "@/api/system/dept";
 
 export default {
-  name: "LibraryInfo",
+  name: "Dept",
   data() {
     return {
       // 遮罩层
@@ -128,7 +98,7 @@ export default {
       // 总条数
       total: 0,
       // 图书馆信息表格数据
-      LibraryInfoList: [],
+      deptList: [],
       // 弹出层标题
       title: "",
       // 是否显示弹出层
@@ -137,23 +107,13 @@ export default {
       queryParams: {
         pageNum: 1,
         pageSize: 10,
+        deptId: null,
+        deptName: null,
       },
       // 表单参数
       form: {},
       // 表单校验
       rules: {
-        libraryId: [
-          { required: true, message: "图书馆ID不能为空", trigger: "blur" }
-        ],
-        name: [
-          { required: true, message: "图书馆名称不能为空", trigger: "blur" }
-        ],
-        address: [
-          { required: true, message: "图书馆地址不能为空", trigger: "blur" }
-        ],
-        contactInfo: [
-          { required: true, message: "图书馆联系信息不能为空", trigger: "blur" }
-        ]
       }
     };
   },
@@ -164,12 +124,15 @@ export default {
     /** 查询图书馆信息列表 */
     getList() {
       this.loading = true;
-      listLibraryInfo(this.queryParams).then(response => {
-        this.LibraryInfoList = response.rows;
-        this.total = response.total;
+      listLibrary(this.queryParams).then(response => {
+        // 后端的数据直接放在response.data中
+        this.deptList = response.data;
+        // 由于后端没有提供total字段，使用deptList的长度作为总数
+        this.total = response.data.length;
         this.loading = false;
       });
     },
+
     // 取消按钮
     cancel() {
       this.open = false;
@@ -178,8 +141,20 @@ export default {
     // 表单重置
     reset() {
       this.form = {
-        libraryId: null,
-        name: null,
+        deptId: null,
+        parentId: null,
+        ancestors: null,
+        deptName: null,
+        orderNum: null,
+        leader: null,
+        phone: null,
+        email: null,
+        status: null,
+        delFlag: null,
+        createBy: null,
+        createTime: null,
+        updateBy: null,
+        updateTime: null,
         address: null,
         contactInfo: null
       };
@@ -197,7 +172,7 @@ export default {
     },
     // 多选框选中数据
     handleSelectionChange(selection) {
-      this.ids = selection.map(item => item.libraryId)
+      this.ids = selection.map(item => item.deptId)
       this.single = selection.length!==1
       this.multiple = !selection.length
     },
@@ -210,25 +185,31 @@ export default {
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.reset();
-      const libraryId = row.libraryId || this.ids
-      getLibraryInfo(libraryId).then(response => {
+      const deptId = row.deptId || this.ids
+      getDept(deptId).then(response => {
         this.form = response.data;
         this.open = true;
         this.title = "修改图书馆信息";
       });
     },
+
+    /** 联系他们按钮操作 */
+    handleContact() {
+
+    },
+
     /** 提交按钮 */
     submitForm() {
       this.$refs["form"].validate(valid => {
         if (valid) {
-          if (this.form.libraryId != null) {
-            updateLibraryInfo(this.form).then(response => {
+          if (this.form.deptId != null) {
+            updateDept(this.form).then(response => {
               this.$modal.msgSuccess("修改成功");
               this.open = false;
               this.getList();
             });
           } else {
-            addLibraryInfo(this.form).then(response => {
+            addDept(this.form).then(response => {
               this.$modal.msgSuccess("新增成功");
               this.open = false;
               this.getList();
@@ -239,9 +220,9 @@ export default {
     },
     /** 删除按钮操作 */
     handleDelete(row) {
-      const libraryIds = row.libraryId || this.ids;
-      this.$modal.confirm('是否确认删除图书馆信息编号为"' + libraryIds + '"的数据项？').then(function() {
-        return delLibraryInfo(libraryIds);
+      const deptIds = row.deptId || this.ids;
+      this.$modal.confirm('是否确认删除图书馆信息编号为"' + deptIds + '"的数据项？').then(function() {
+        return delDept(deptIds);
       }).then(() => {
         this.getList();
         this.$modal.msgSuccess("删除成功");
@@ -249,9 +230,9 @@ export default {
     },
     /** 导出按钮操作 */
     handleExport() {
-      this.download('library/LibraryInfo/export', {
+      this.download('system/dept/export', {
         ...this.queryParams
-      }, `LibraryInfo_${new Date().getTime()}.xlsx`)
+      }, `libraryList_${new Date().getTime()}.xlsx`)
     }
   }
 };

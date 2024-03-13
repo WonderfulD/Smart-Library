@@ -1,6 +1,8 @@
 package com.ruoyi.web.controller.system;
 
 import java.util.List;
+
+import com.ruoyi.common.utils.poi.ExcelUtil;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,6 +23,9 @@ import com.ruoyi.common.core.domain.entity.SysDept;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.system.service.ISysDeptService;
+
+import javax.servlet.http.HttpServletResponse;
+
 
 /**
  * 部门信息
@@ -44,6 +49,39 @@ public class SysDeptController extends BaseController
         List<SysDept> depts = deptService.selectDeptList(dept);
         return success(depts);
     }
+
+
+
+
+    /**
+     * 获取图书馆列表
+     */
+    @PreAuthorize("@ss.hasPermi('system:dept:list')")
+    @GetMapping("/library/list")
+    public AjaxResult listLibrary() {
+        SysDept deptCriteria = new SysDept();
+        deptCriteria.setParentId(101L); // 设置parentId为101，以筛选出图书馆
+        List<SysDept> libraries = deptService.selectDeptList(deptCriteria);
+        return success(libraries);
+    }
+
+    /**
+     * 导出图书馆信息列表
+     */
+    @PreAuthorize("@ss.hasPermi('system:dept:export')")
+    @Log(title = "图书馆信息", businessType = BusinessType.EXPORT)
+    @PostMapping("/export")
+    public void export(HttpServletResponse response, SysDept sysDept)
+    {
+        SysDept deptCriteria = new SysDept();
+        deptCriteria.setParentId(101L); // 设置parentId为101，以筛选出图书馆
+        List<SysDept> libraries = deptService.selectDeptList(deptCriteria);
+//        List<SysDept> list = deptService.selectDeptList(sysDept);
+//        System.out.println("List<SysDept> list为： " + list.toString());
+        ExcelUtil<SysDept> util = new ExcelUtil<SysDept>(SysDept.class);
+        util.exportExcel(response, libraries, "图书馆信息数据");
+    }
+
 
     /**
      * 查询部门列表（排除节点）
@@ -83,6 +121,9 @@ public class SysDeptController extends BaseController
         dept.setCreateBy(getUsername());
         return toAjax(deptService.insertDept(dept));
     }
+
+
+
 
     /**
      * 修改部门
