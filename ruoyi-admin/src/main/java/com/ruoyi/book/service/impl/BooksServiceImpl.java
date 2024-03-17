@@ -90,4 +90,12 @@ public class BooksServiceImpl implements IBooksService
     {
         return booksMapper.deleteBooksByBookId(bookId);
     }
+
+    /**
+     * 根据图书馆ID查询图书副本信息列表
+     */
+    @Override
+    public List<Books> selectBooksListByLibrary(Books books) {
+        return booksMapper.selectBooksListByLibrary(books);
+    }
 }

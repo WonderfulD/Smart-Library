@@ -42,3 +42,22 @@ export function delBookInfo(bookId) {
     method: 'delete'
   })
 }
+
+//根据当前登录管理员所在图书馆id（部门id）查询图书副本信息列表
+export function listBookInfoByLibraryId(query) {
+  return request({
+    url: '/book/BookInfo/listByLibrary',
+    method: 'get',
+    params: query
+  })
+}
+
+// 根据提供的借阅信息借阅图书
+export function borrowBook(data) {
+  return request({
+    url: '/book/BookInfo/borrow',
+    method: 'post',
+    data: data // 传递完整的借阅信息
+  });
+}
+

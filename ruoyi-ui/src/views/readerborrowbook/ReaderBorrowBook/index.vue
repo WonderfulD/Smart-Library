@@ -1,3 +1,4 @@
+<!--复制藏书管理/图书信息/index.vue-->
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="100px">
@@ -68,44 +69,11 @@
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button
-          type="primary"
-          plain
-          icon="el-icon-plus"
-          size="mini"
-          @click="handleAdd"
-          v-hasPermi="['book:BookInfo:add']"
-        >新增</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="success"
-          plain
-          icon="el-icon-edit"
-          size="mini"
-          :disabled="single"
-          @click="handleUpdate"
-          v-hasPermi="['book:BookInfo:edit']"
-        >修改</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="danger"
-          plain
-          icon="el-icon-delete"
-          size="mini"
-          :disabled="multiple"
-          @click="handleDelete"
-          v-hasPermi="['book:BookInfo:remove']"
-        >删除</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
           type="warning"
           plain
           icon="el-icon-download"
           size="mini"
           @click="handleExport"
-          v-hasPermi="['book:BookInfo:export']"
         >导出</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
@@ -131,17 +99,15 @@
           <el-button
             size="mini"
             type="text"
-            icon="el-icon-edit"
-            @click="handleUpdate(scope.row)"
-            v-hasPermi="['book:BookInfo:edit']"
-          >修改</el-button>
+            icon="el-icon-reading"
+            @click="handleBorrow(scope.row)"
+          >借阅</el-button>
           <el-button
             size="mini"
             type="text"
-            icon="el-icon-delete"
-            @click="handleDelete(scope.row)"
-            v-hasPermi="['book:BookInfo:remove']"
-          >删除</el-button>
+            icon="el-icon-discover"
+            @click="handleView(scope.row)"
+          >查看</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -171,10 +137,10 @@
         </el-form-item>
         <el-form-item label="出版日期" prop="publishDate">
           <el-date-picker clearable
-            v-model="form.publishDate"
-            type="date"
-            value-format="yyyy-MM-dd"
-            placeholder="请选择出版日期">
+                          v-model="form.publishDate"
+                          type="date"
+                          value-format="yyyy-MM-dd"
+                          placeholder="请选择出版日期">
           </el-date-picker>
         </el-form-item>
         <el-form-item label="图书分类" prop="category">
@@ -211,8 +177,10 @@ import {
   delBookInfo,
   addBookInfo,
   updateBookInfo,
-  listBookInfoByLibraryId
+  borrowBookByBookId, borrowBook
 } from "@/api/book/BookInfo";
+
+import { Message } from 'element-ui';
 
 export default {
   name: "BookInfo",
@@ -269,15 +237,10 @@ export default {
     this.getList();
   },
   methods: {
-    /** 查询图书副本信息列表 */
+    /** 查询所有图书馆图书副本信息列表 */
     getList() {
       this.loading = true;
-      // listBookInfo(this.queryParams).then(response => {
-      //   this.BookInfoList = response.rows;
-      //   this.total = response.total;
-      //   this.loading = false;
-      // });
-      listBookInfoByLibraryId(this.queryParams).then(response => {
+      listBookInfo(this.queryParams).then(response => {
         this.BookInfoList = response.rows;
         this.total = response.total;
         this.loading = false;
@@ -340,6 +303,47 @@ export default {
         this.title = "修改图书副本信息";
       });
     },
+
+    /** 借阅按钮操作 */
+    handleBorrow(row) {
+      // 假设你已经有方式获取readerId和libraryId
+      const readerId = this.$store.state.user.id;
+      const libraryId = row.libraryId;
+      const today = new Date();
+      const dueDate = new Date(today);
+      dueDate.setDate(dueDate.getDate() + 30);// 假设借阅期限是30天
+
+      const borrowInfo = {
+        bookId: row.bookId,
+        readerId: readerId,
+        libraryId: libraryId,
+        borrowDate: today.toISOString().split('T')[0], // 格式化日期为YYYY-MM-DD
+        dueDate: dueDate.toISOString().split('T')[0], // 格式化日期为YYYY-MM-DD
+      };
+
+      console.log(borrowInfo);
+      // 调用API函数，传入借阅信息
+      borrowBook(borrowInfo).then(response => {
+        if (response.code === 200) {
+          // 借阅成功
+          this.$message.success('借阅成功');
+          this.getList();
+        } else {
+          // 后端返回了错误状态，借阅失败
+          this.$message.error(response.message || '借阅失败');
+        }
+      }).catch(error => {
+        // 请求发送失败或后端抛出异常
+        console.error('Borrow operation failed:', error);
+        this.$message.error('借阅失败，请稍后再试');
+      });
+    },
+
+
+    /** 查看按钮操作 */
+    handleView(row) {
+    },
+
     /** 提交按钮 */
     submitForm() {
       this.$refs["form"].validate(valid => {

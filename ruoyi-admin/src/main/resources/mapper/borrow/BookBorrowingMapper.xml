@@ -85,4 +85,18 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             #{borrowId}
         </foreach>
     </delete>
+
+    <select id="selectBookBorrowingListByDept" parameterType="BookBorrowing" resultMap="BookBorrowingResult">
+        <include refid="selectBookBorrowingVo"/>
+        <where>
+            <if test="libraryId != null"> AND library_id = #{libraryId}</if>
+            <if test="borrowId != null "> AND borrow_id = #{borrowId}</if>
+            <if test="bookId != null "> AND book_id = #{bookId}</if>
+            <if test="readerId != null "> AND reader_id = #{readerId}</if>
+            <if test="borrowDate != null "> AND borrow_date = #{borrowDate}</if>
+            <if test="dueDate != null "> AND due_date = #{dueDate}</if>
+        </where>
+    </select>
+
+
 </mapper>

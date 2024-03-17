@@ -96,8 +96,8 @@
     <el-table v-loading="loading" :data="BookBorrowingList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="借阅号" align="center" prop="borrowId" />
-      <el-table-column label="书籍ID" align="center" prop="bookId" />
-      <el-table-column label="读者ID" align="center" prop="readerId" />
+      <el-table-column label="书籍编号" align="center" prop="bookId" />
+      <el-table-column label="读者号" align="center" prop="readerId" />
       <el-table-column label="借出日期" align="center" prop="borrowDate" width="180">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.borrowDate, '{y}-{m}-{d}') }}</span>
@@ -181,7 +181,14 @@
 </template>
 
 <script>
-import { listBookBorrowing, getBookBorrowing, delBookBorrowing, addBookBorrowing, updateBookBorrowing } from "@/api/borrow/BookBorrowing";
+import {
+  listBookBorrowing,
+  getBookBorrowing,
+  delBookBorrowing,
+  addBookBorrowing,
+  updateBookBorrowing,
+  listBookBorrowingByDept
+} from "@/api/borrow/BookBorrowing";
 
 export default {
   name: "BookBorrowing",
@@ -241,14 +248,14 @@ export default {
     this.getList();
   },
   methods: {
-    /** 查询图书借阅信息列表 */
+    /** 根据当前登录管理员所在图书馆（部门）id查询图书借阅信息列表 */
     getList() {
       this.loading = true;
-      listBookBorrowing(this.queryParams).then(response => {
+      listBookBorrowingByDept(this.queryParams).then(response => {
         this.BookBorrowingList = response.rows;
         this.total = response.total;
         this.loading = false;
-      });
+      })
     },
     // 取消按钮
     cancel() {

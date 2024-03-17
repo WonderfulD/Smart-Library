@@ -2,6 +2,8 @@ package com.ruoyi.borrow.controller;
 
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
+
+import com.ruoyi.common.utils.SecurityUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,6 +45,18 @@ public class BookBorrowingController extends BaseController
     {
         startPage();
         List<BookBorrowing> list = bookBorrowingService.selectBookBorrowingList(bookBorrowing);
+        return getDataTable(list);
+    }
+
+    /**
+     * 根据当前登录管理员所在图书馆ID，查询图书借阅信息列表
+     */
+    @PreAuthorize("@ss.hasPermi('borrow:BookBorrowing:list')")
+    @GetMapping("/listByDept")
+    public TableDataInfo listByDept(BookBorrowing bookBorrowing) {
+        startPage();
+        bookBorrowing.setLibraryId(SecurityUtils.getDeptId()); // 设置当前用户所在部门ID
+        List<BookBorrowing> list = bookBorrowingService.selectBookBorrowingListByDept(bookBorrowing);
         return getDataTable(list);
     }
 

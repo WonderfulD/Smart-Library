@@ -58,4 +58,14 @@ public interface BookBorrowingMapper
      * @return 结果
      */
     public int deleteBookBorrowingByBorrowIds(Long[] borrowIds);
+
+
+    /**
+     * 根据部门查询图书借阅信息
+     *
+     * @param bookBorrowing 包含查询条件的实体，包括图书馆（部门）ID
+     * @return 符合条件的图书借阅信息列表
+     */
+    List<BookBorrowing> selectBookBorrowingListByDept(BookBorrowing bookBorrowing);
+
 }

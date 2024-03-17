@@ -42,3 +42,12 @@ export function delBookBorrowing(borrowId) {
     method: 'delete'
   })
 }
+
+//根据当前登录管理员所在图书馆（部门）id查询图书借阅信息列表
+export function listBookBorrowingByDept(query) {
+  return request({
+    url: '/borrow/BookBorrowing/listByDept',
+    method: 'get',
+    params: query
+  })
+}

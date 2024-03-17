@@ -58,4 +58,9 @@ public interface IBooksService
      * @return 结果
      */
     public int deleteBooksByBookId(Long bookId);
+
+    /**
+     * 根据图书馆ID查询图书副本信息列表
+     */
+    List<Books> selectBooksListByLibrary(Books books);
 }

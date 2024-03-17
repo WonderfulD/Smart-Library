@@ -39,7 +39,7 @@
 
     <el-table v-loading="loading" :data="deptList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="图书馆id" align="center" prop="deptId" />
+      <el-table-column label="图书馆编号" align="center" prop="deptId" />
       <el-table-column label="图书馆名称" align="center" prop="deptName" />
       <el-table-column label="负责人" align="center" prop="leader" />
       <el-table-column label="联系电话" align="center" prop="phone" />

@@ -58,4 +58,10 @@ public interface BooksMapper
      * @return 结果
      */
     public int deleteBooksByBookIds(Long[] bookIds);
+
+    /**
+     * 根据图书馆ID查询图书副本信息列表
+     */
+    List<Books> selectBooksListByLibrary(Books books);
+
 }
