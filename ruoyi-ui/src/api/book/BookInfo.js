@@ -61,3 +61,20 @@ export function borrowBook(data) {
   });
 }
 
+//根据借阅人ID查询图书借阅信息
+export function listBookBorrowingListByReaderId(query) {
+  return request({
+    url: '/book/BookInfo/listByReader',
+    method: 'get',
+    params: query
+  })
+}
+
+// 根据提供的借阅信息归还图书
+export function returnBook(data) {
+  return request({
+    url: '/book/BookInfo/return',
+    method: 'post',
+    data: data
+  });
+}

@@ -306,7 +306,7 @@ export default {
 
     /** 借阅按钮操作 */
     handleBorrow(row) {
-      // 假设你已经有方式获取readerId和libraryId
+      // 事务管理，设置图书状态为借出+新增借阅记录至借阅表必须支持原子性
       const readerId = this.$store.state.user.id;
       const libraryId = row.libraryId;
       const today = new Date();

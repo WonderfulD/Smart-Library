@@ -1,6 +1,8 @@
 package com.ruoyi.borrow.service.impl;
 
 import java.util.List;
+
+import com.ruoyi.book.domain.Books;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ruoyi.borrow.mapper.BookBorrowingMapper;
@@ -102,5 +104,17 @@ public class BookBorrowingServiceImpl implements IBookBorrowingService
     public List<BookBorrowing> selectBookBorrowingListByDept(BookBorrowing bookBorrowing) {
         // 调用Mapper层的方法，传入BookBorrowing对象，该对象包含了部门ID
         return bookBorrowingMapper.selectBookBorrowingListByDept(bookBorrowing);
+    }
+
+
+    /**
+     * 根据借阅人ID查询图书借阅信息
+     *
+     * @param bookBorrowing 包含查询条件的实体，包括借阅人ID
+     * @return 符合条件的图书借阅信息列表
+     */
+    @Override
+    public List<Books> selectBookBorrowingListByReaderId(BookBorrowing bookBorrowing) {
+        return bookBorrowingMapper.selectBookBorrowingListByReaderId(bookBorrowing);
     }
 }

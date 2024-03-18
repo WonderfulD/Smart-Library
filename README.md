@@ -48,4 +48,4 @@ set NODE_OPTIONS=--openssl-legacy-provider
 ```
 
 #### 目前已知的问题
-
+- 读者借阅图书失败时事务并未显示原子性，`Books`表`status`字段显示`1`(`借出`)，但`BookBorrowing`表并未新增记录

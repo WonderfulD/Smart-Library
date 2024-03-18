@@ -1,6 +1,8 @@
 package com.ruoyi.borrow.service;
 
 import java.util.List;
+
+import com.ruoyi.book.domain.Books;
 import com.ruoyi.borrow.domain.BookBorrowing;
 
 /**
@@ -67,4 +69,12 @@ public interface IBookBorrowingService
      * @return 符合条件的图书借阅信息列表
      */
     List<BookBorrowing> selectBookBorrowingListByDept(BookBorrowing bookBorrowing);
+
+    /**
+     * 根据借阅人ID查询图书借阅信息
+     *
+     * @param bookBorrowing 包含查询条件的实体，包括借阅人ID
+     * @return 符合条件的图书借阅信息列表
+     */
+    List<Books> selectBookBorrowingListByReaderId(BookBorrowing bookBorrowing);
 }

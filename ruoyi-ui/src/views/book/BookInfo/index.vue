@@ -269,7 +269,7 @@ export default {
     this.getList();
   },
   methods: {
-    /** 查询图书副本信息列表 */
+    /** 根据登陆管理员所在图书馆ID查询图书副本信息列表 */
     getList() {
       this.loading = true;
       // listBookInfo(this.queryParams).then(response => {
