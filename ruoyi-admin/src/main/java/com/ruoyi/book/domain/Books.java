@@ -68,7 +68,19 @@ public class Books extends BaseEntity
     @Excel(name = "借阅状态")
     private Long status;
 
-    public void setBookId(Long bookId) 
+    /** 简介 */
+    @Excel(name = "简介")
+    private String summary;
+
+    public String getSummary() {
+        return summary;
+    }
+
+    public void setSummary(String summary) {
+        this.summary = summary;
+    }
+
+    public void setBookId(Long bookId)
     {
         this.bookId = bookId;
     }

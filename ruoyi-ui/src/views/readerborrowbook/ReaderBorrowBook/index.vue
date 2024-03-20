@@ -342,6 +342,7 @@ export default {
 
     /** 查看按钮操作 */
     handleView(row) {
+      this.$router.push({ path: `/bookdetails/${row.bookId}` });
     },
 
     /** 提交按钮 */
@@ -364,6 +365,7 @@ export default {
         }
       });
     },
+
     /** 删除按钮操作 */
     handleDelete(row) {
       const bookIds = row.bookId || this.ids;

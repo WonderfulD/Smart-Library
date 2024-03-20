@@ -87,7 +87,21 @@ export const constantRoutes = [
         meta: { title: '个人中心', icon: 'user' }
       }
     ]
+  },
+  {
+    path: '/bookdetails/:bookId', // 使用动态路由匹配图书的ID
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: '', // 默认子路由
+        component: () => import('@/views/bookdetails/BookDetails/index'), // 懒加载图书详情组件
+        name: 'BookDetails',
+        meta: { title: '图书详情', icon: 'book' } // 根据需要设置meta属性
+      }
+    ]
   }
+
 ]
 
 // 动态路由，基于用户权限动态去加载

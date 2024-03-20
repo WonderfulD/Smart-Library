@@ -156,7 +156,7 @@
 
     <!-- 添加或修改图书副本信息对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+      <el-form :key="formKey" ref="form" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="书名" prop="title">
           <el-input v-model="form.title" placeholder="请输入书名" />
         </el-form-item>
@@ -183,17 +183,34 @@
         <el-form-item label="图书描述" prop="description">
           <el-input v-model="form.description" type="textarea" placeholder="请输入内容" />
         </el-form-item>
+        <el-form-item label="简介" prop="summary">
+          <el-input v-model="form.summary" type="textarea" placeholder="请输入简介" />
+        </el-form-item>
         <el-form-item label="图书语言" prop="language">
           <el-input v-model="form.language" placeholder="请输入图书语言" />
         </el-form-item>
         <el-form-item label="页数" prop="pages">
           <el-input v-model="form.pages" placeholder="请输入页数" />
         </el-form-item>
-        <el-form-item label="封面图片URL" prop="coverUrl">
-          <el-input v-model="form.coverUrl" placeholder="请输入封面图片URL" />
-        </el-form-item>
         <el-form-item label="版次" prop="edition">
           <el-input v-model="form.edition" placeholder="请输入版次" />
+        </el-form-item>
+        <!-- 文件上传组件 -->
+        <el-form-item label="上传文件">
+          <!-- 图书封面上传 -->
+          <el-form-item label="图书封面">
+            <el-upload
+              :key="uploadKey"
+              name="files"
+              multiple
+              :action="uploadFileUrl"
+              :before-upload="handleBeforeUpload"
+              :on-success="(response, file) => handleUploadSuccess(response, file)"
+              :headers="headers"
+              list-type="text">
+              <el-button size="small" type="primary">选择文件</el-button>
+            </el-upload>
+          </el-form-item>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -213,6 +230,7 @@ import {
   updateBookInfo,
   listBookInfoByLibraryId
 } from "@/api/book/BookInfo";
+import {getToken} from "@/utils/auth";
 
 export default {
   name: "BookInfo",
@@ -231,12 +249,19 @@ export default {
       showSearch: true,
       // 总条数
       total: 0,
+      formKey: 0, // 用于重置表单和上传组件状态
+      uploadKey: 0, // 如果需要单独重置上传组件
       // 图书副本信息表格数据
       BookInfoList: [],
       // 弹出层标题
       title: "",
       // 是否显示弹出层
       open: false,
+      // 修改上传地址为多文件上传
+      uploadFileUrl: process.env.VUE_APP_BASE_API + "/common/uploads",
+      headers: {
+        Authorization: "Bearer " + getToken(),
+      },
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -272,11 +297,6 @@ export default {
     /** 根据登陆管理员所在图书馆ID查询图书副本信息列表 */
     getList() {
       this.loading = true;
-      // listBookInfo(this.queryParams).then(response => {
-      //   this.BookInfoList = response.rows;
-      //   this.total = response.total;
-      //   this.loading = false;
-      // });
       listBookInfoByLibraryId(this.queryParams).then(response => {
         this.BookInfoList = response.rows;
         this.total = response.total;
@@ -304,7 +324,8 @@ export default {
         pages: null,
         coverUrl: null,
         edition: null,
-        status: null
+        status: null,
+        summary: null
       };
       this.resetForm("form");
     },
@@ -329,15 +350,19 @@ export default {
       this.reset();
       this.open = true;
       this.title = "添加图书副本信息";
+      this.formKey++; // 改变key值来重置表单状态
+      this.uploadKey++; // 如果需要单独重置上传组件
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.reset();
-      const bookId = row.bookId || this.ids
+      const bookId = row.bookId || this.ids;
       getBookInfo(bookId).then(response => {
         this.form = response.data;
         this.open = true;
         this.title = "修改图书副本信息";
+        this.formKey++; // 改变key值来重置表单状态
+        this.uploadKey++; // 如果需要单独重置上传组件
       });
     },
     /** 提交按钮 */
@@ -349,6 +374,7 @@ export default {
               this.$modal.msgSuccess("修改成功");
               this.open = false;
               this.getList();
+
             });
           } else {
             addBookInfo(this.form).then(response => {
@@ -360,6 +386,22 @@ export default {
         }
       });
     },
+
+    /** 上传前验证文件有效性 */
+    handleBeforeUpload(file) {
+      const isLt2M = file.size / 1024 / 1024 < 2; // 检查文件大小是否小于2MB
+      if (!isLt2M) {
+        this.$message.error('上传的文件大小不能超过 2MB!');
+        return false;
+      }
+      return true; // 如果检查通过，则继续上传
+    },
+
+    /** 处理上传成功 */
+    handleUploadSuccess(response, file) {
+      this.form.coverUrl=response.urls;
+    },
+
     /** 删除按钮操作 */
     handleDelete(row) {
       const bookIds = row.bookId || this.ids;
