@@ -56,7 +56,20 @@ public class BookBorrowing extends BaseEntity
     @Excel(name = "借阅备注")
     private String comments;
 
-    public void setBorrowId(Long borrowId) 
+
+    /** 借阅状态 */
+    @Excel(name = "借阅状态")
+    private int status;
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
+    public void setBorrowId(Long borrowId)
     {
         this.borrowId = borrowId;
     }

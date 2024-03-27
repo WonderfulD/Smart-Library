@@ -14,10 +14,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="returnDate"    column="return_date"    />
         <result property="fine"    column="fine"    />
         <result property="comments"    column="comments"    />
+        <result property="status"    column="status"    />
     </resultMap>
 
     <sql id="selectBookBorrowingVo">
-        select borrow_id, book_id, reader_id, library_id, borrow_date, due_date, return_date, fine, comments from BookBorrowing
+        select borrow_id, book_id, reader_id, library_id, borrow_date, due_date, return_date, fine, comments, status from BookBorrowing
     </sql>
 
     <select id="selectBookBorrowingList" parameterType="BookBorrowing" resultMap="BookBorrowingResult">
@@ -39,6 +40,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <insert id="insertBookBorrowing" parameterType="BookBorrowing" useGeneratedKeys="true" keyProperty="borrowId">
         insert into BookBorrowing
         <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="borrowId != null">borrow_id,</if>
             <if test="bookId != null">book_id,</if>
             <if test="readerId != null">reader_id,</if>
             <if test="libraryId != null">library_id,</if>
@@ -49,6 +51,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="comments != null">comments,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="borrowId != null">#{borrowId},</if>
             <if test="bookId != null">#{bookId},</if>
             <if test="readerId != null">#{readerId},</if>
             <if test="libraryId != null">#{libraryId},</if>

@@ -1,8 +1,10 @@
 package com.ruoyi.book.controller;
 
 import java.time.LocalDate;
-import java.util.Date;
-import java.util.List;
+import java.time.ZoneId;
+
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import javax.servlet.http.HttpServletResponse;
 
 import com.ruoyi.common.utils.SecurityUtils;
@@ -25,11 +27,10 @@ import com.ruoyi.book.service.IBooksService;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.common.core.page.TableDataInfo;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import com.ruoyi.borrow.domain.BookBorrowing;
 import com.ruoyi.borrow.service.IBookBorrowingService;
+
+import java.util.stream.Collectors;
 
 /**
  * 图书副本信息Controller
@@ -71,6 +72,185 @@ public class BooksController extends BaseController
         List<Books> list = booksService.selectBooksListByLibrary(books);
         return getDataTable(list);
     }
+
+    /**
+     * 根据图书馆ID查询读者借阅图书类别分布
+     */
+    @GetMapping("/categoryDistribution")
+    public AjaxResult getCategoryDistribution() {
+        try {
+            // 获取当前图书馆的所有图书信息
+            Books books = new Books();
+            books.setLibraryId(SecurityUtils.getDeptId());
+            List<Books> bookList = booksService.selectBooksListByLibrary(books);
+
+            // 统计每个类别的图书数量
+            Map<String, Integer> categoryCount = new HashMap<>();
+            for (Books book : bookList) {
+                // 获取每本图书的详细信息
+                Books bookInfo = booksService.selectBooksByBookId(book.getBookId());
+                String category = bookInfo.getCategory();
+
+                // 更新统计信息
+                categoryCount.put(category, categoryCount.getOrDefault(category, 0) + 1);
+            }
+            // 返回统计结果
+            return AjaxResult.success("获取成功", categoryCount);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return AjaxResult.error("获取图书类别统计信息失败");
+        }
+    }
+
+    /**
+     * 根据图书馆ID查询最近藏书量
+     */
+    @GetMapping("/listRecentBooks")
+    public AjaxResult listRecentBooks() {
+        LocalDate today = LocalDate.now();
+        LocalDate sevenDaysAgo = today.minusDays(7);
+
+        // 获取当前图书馆的所有图书信息
+        Books books = new Books();
+        books.setLibraryId(SecurityUtils.getDeptId());
+        List<Books> bookList = booksService.selectBooksListByLibrary(books);
+
+        // 初始化最近七天的藏书量列表
+        List<Integer> recentBooksCounts = new ArrayList<>(Collections.nCopies(7, 0));
+
+        // 遍历最近七天
+        for (int i = 1; i < 8; i++) {
+            LocalDate specificDay = sevenDaysAgo.plusDays(i);
+            int finalI = i;
+            // 计算截至到specificDay的藏书量
+            long count = bookList.stream()
+                    .filter(book -> {
+                        LocalDate purchaseDate = book.getPurchaseDate().toInstant()
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDate();
+                        return !purchaseDate.isAfter(specificDay);
+                    })
+                    .count();
+            recentBooksCounts.set(finalI - 1, (int) count);
+        }
+
+        // 预计藏书量列表，此示例中返回空列表
+        List<Integer> estimatedBooksCount = new ArrayList<>();
+
+        // 封装结果返回
+        Map<String, Object> result = new HashMap<>();
+        result.put("recentBooksCounts", recentBooksCounts);
+        result.put("estimatedBooksCount", estimatedBooksCount);
+
+        return AjaxResult.success(result);
+    }
+
+
+    /**
+     * 根据图书馆ID查询最近借阅量
+     */
+    @GetMapping("/listRecentBorrows")
+    public AjaxResult listRecentBorrows() {
+        LocalDate today = LocalDate.now();
+        LocalDate sevenDaysAgo = today.minusDays(7);
+
+        // 获取当前图书馆的所有借阅信息
+        BookBorrowing bookBorrowing = new BookBorrowing();
+        bookBorrowing.setLibraryId(SecurityUtils.getDeptId());
+        List<BookBorrowing> bookBorrowingList = bookBorrowingService.selectBookBorrowingListByDept(bookBorrowing);
+
+        // 初始化最近七天的借阅列表
+        List<Integer> recentBorrowsCounts = new ArrayList<>(Collections.nCopies(7, 0));
+
+        // 遍历最近七天
+        for (int i = 1; i < 8; i++) {
+            LocalDate specificDay = sevenDaysAgo.plusDays(i);
+            int finalI = i;
+            // 计算截至到specificDay的借阅量
+            long count = bookBorrowingList.stream()
+                    .filter(borrowing -> {
+                        LocalDate borrowDate = borrowing.getBorrowDate().toInstant()
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDate();
+                        return !borrowDate.isAfter(specificDay);
+                    })
+                    .count();
+            recentBorrowsCounts.set(finalI - 1, (int) count);
+        }
+
+        // 初始化最近14天至最近7天的借阅列表
+        List<Integer> lastBorrowsCounts = new ArrayList<>(Collections.nCopies(7, 0));
+
+        LocalDate fourteenDaysAgo = today.minusDays(14);
+
+        // 遍历最近14天至最近7天
+        for (int i = 1; i < 8; i++) {
+            LocalDate specificDay = fourteenDaysAgo.plusDays(i);
+            int finalI = i;
+            // 计算截至到specificDay的借阅量
+            long count = bookBorrowingList.stream()
+                    .filter(borrowing -> {
+                        LocalDate borrowDate = borrowing.getBorrowDate().toInstant()
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDate();
+                        return !borrowDate.isAfter(specificDay);
+                    })
+                    .count();
+            lastBorrowsCounts.set(finalI - 1, (int) count);
+        }
+
+        // 预计借阅量列表
+        List<Integer> estimatedBorrowsCount = estimateFutureBorrowCounts(lastBorrowsCounts);
+
+        System.out.println(lastBorrowsCounts);
+        System.out.println(estimatedBorrowsCount);
+
+        // 封装结果返回
+        Map<String, Object> result = new HashMap<>();
+        result.put("recentBorrowsCounts", recentBorrowsCounts);
+        result.put("estimatedBorrowsCount", estimatedBorrowsCount);
+
+        return AjaxResult.success(result);
+    }
+
+    /**
+     * 预估未来七天的借阅量
+     */
+    public List<Integer> estimateFutureBorrowCounts(List<Integer> recentBorrowsCounts) {
+        List<Integer> estimatedBorrowsCount = new ArrayList<>();
+
+        // 用最后一天的借阅量作为基准开始预估
+        int lastDayCount = recentBorrowsCounts.get(recentBorrowsCounts.size() - 1);
+
+        // 用于跟踪连续相同数字的计数器
+        int sameCount = 1; // 至少有一个（最后一个日子的计数）
+
+        for (int i = 0; i < 7; i++) {
+            // 基于上一天预估下一天的借阅量
+            int estimate = lastDayCount; // 这里可以加入复杂的逻辑来改进预估
+
+            // 如果前两个预估值与当前相同，增加10%
+            if (i >= 2 && estimatedBorrowsCount.get(i-1).equals(estimatedBorrowsCount.get(i-2)) && sameCount >= 2) {
+                estimate = (int) Math.round(estimate * 1.1); // 增加10%
+                estimate = Math.max(estimate, lastDayCount + 1); // 确保至少增加1
+                sameCount = 0; // 重置连续相同数字的计数器
+            }
+
+            estimatedBorrowsCount.add(estimate);
+            lastDayCount = estimate;
+
+            // 检查连续相同值的情况
+            if (i > 0 && estimate == estimatedBorrowsCount.get(i - 1)) {
+                sameCount++; // 增加连续相同计数
+            } else {
+                sameCount = 1; // 重置计数
+            }
+        }
+
+        return estimatedBorrowsCount;
+    }
+
+
 
     /**
      * 根据借阅人ID查询图书副本信息列表
@@ -117,6 +297,8 @@ public class BooksController extends BaseController
     @PostMapping
     public AjaxResult add(@RequestBody Books books)
     {
+        Date today = new Date();
+        books.setPurchaseDate(today);
         return toAjax(booksService.insertBooks(books));
     }
 
@@ -174,6 +356,19 @@ public class BooksController extends BaseController
             bookBorrowing.setLibraryId(libraryId);
             bookBorrowing.setBorrowDate(borrowDate);
             bookBorrowing.setDueDate(dueDate);
+
+            //设置borrowId为日期+随机数
+            long timestamp = new Date().getTime();
+            long randomNumber = ThreadLocalRandom.current().nextLong(1, 1000);
+            long borrowId = (timestamp % 100000000L) * 1000 + randomNumber; // 确保borrowId适合Long存储
+            bookBorrowing.setBorrowId(borrowId); // 设置生成的借阅编号
+
+            //设置借阅状态
+            bookBorrowing.setStatus(0);
+
+            //设置借阅备注
+            bookBorrowing.setComments("已借出");
+
             bookBorrowingService.insertBookBorrowing(bookBorrowing);
 
             return AjaxResult.success("借阅成功");

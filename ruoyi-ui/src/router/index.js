@@ -70,7 +70,7 @@ export const constantRoutes = [
         path: 'index',
         component: () => import('@/views/index'),
         name: 'Index',
-        meta: { title: '首页', icon: 'dashboard', affix: true }
+        meta: { title: '首页', icon: 'home', affix: true }
       }
     ]
   },
@@ -100,7 +100,20 @@ export const constantRoutes = [
         meta: { title: '图书详情', icon: 'book' } // 根据需要设置meta属性
       }
     ]
-  }
+  },
+  {
+    path: '/dashboard',
+    component: Layout,
+    hidden: false,
+    children: [
+      {
+        path: '', // 默认子路由
+        component: () => import('@/views/dashboard/index.vue'), // 懒加载图书详情组件
+        name: 'dashboard',
+        meta: { title: '控制台', icon: 'dashboard'}
+      }
+    ]
+  },
 
 ]
 

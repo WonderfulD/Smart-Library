@@ -72,6 +72,18 @@ public class Books extends BaseEntity
     @Excel(name = "简介")
     private String summary;
 
+    /** 藏书日期 */
+    @Excel(name = "藏书日期")
+    private Date purchaseDate;
+
+    public Date getPurchaseDate() {
+        return purchaseDate;
+    }
+
+    public void setPurchaseDate(Date purchaseDate) {
+        this.purchaseDate = purchaseDate;
+    }
+
     public String getSummary() {
         return summary;
     }
