@@ -9,7 +9,7 @@
           <div class="card-panel-text">
             藏书量
           </div>
-          <count-to :start-val="0" :end-val="5" :duration="2600" class="card-panel-num" />
+          <count-to :start-val="0" :end-val=booksCount :duration="2600" class="card-panel-num" />
         </div>
       </div>
     </el-col>
@@ -22,7 +22,7 @@
           <div class="card-panel-text">
             借阅总量
           </div>
-          <count-to :start-val="0" :end-val="8" :duration="3000" class="card-panel-num" />
+          <count-to :start-val="0" :end-val=borrowsCount :duration="3000" class="card-panel-num" />
         </div>
       </div>
     </el-col>
@@ -35,7 +35,7 @@
           <div class="card-panel-text">
             会员数
           </div>
-          <count-to :start-val="0" :end-val="3" :duration="3200" class="card-panel-num" />
+          <count-to :start-val="0" :end-val=membersCount :duration="3200" class="card-panel-num" />
         </div>
       </div>
     </el-col>
@@ -57,16 +57,40 @@
 
 <script>
 import CountTo from 'vue-count-to'
+import {listBookInfoByLibraryId} from "@/api/book/BookInfo";
+import {listBookBorrowingByDept} from "@/api/borrow/BookBorrowing";
+import {getTotalMembers} from "@/api/remote-search";
 
 export default {
   components: {
     CountTo
   },
+  created() {
+    this.getCounts();
+  },
   methods: {
     handleSetLineChartData(type) {
       this.$emit('handleSetLineChartData', type)
+    },
+    getCounts() {
+      listBookInfoByLibraryId().then(response => {
+        this.booksCount = response.total;
+      })
+      listBookBorrowingByDept().then(response => {
+        this.borrowsCount = response.total;
+      })
+      getTotalMembers().then(response => {
+        this.membersCount = response.data.MembersCounts;
+      })
     }
-  }
+  },
+  data() {
+    return {
+      booksCount: 0,
+      borrowsCount: 0,
+      membersCount: 0,
+    }
+  },
 }
 </script>
 

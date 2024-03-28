@@ -35,7 +35,7 @@ import resize from './mixins/resize'
 import {listBookBorrowingByDept} from "@/api/borrow/BookBorrowing";
 
 
-const animationDuration = 6000
+const animationDuration = 2000
 
 export default {
   mixins: [resize],

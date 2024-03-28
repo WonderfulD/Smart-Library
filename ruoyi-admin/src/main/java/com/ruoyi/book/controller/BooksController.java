@@ -32,6 +32,8 @@ import com.ruoyi.borrow.service.IBookBorrowingService;
 
 import java.util.stream.Collectors;
 
+import static com.ruoyi.prediction.Prediction.predictNextWeek;
+
 /**
  * 图书副本信息Controller
  * 
@@ -150,7 +152,7 @@ public class BooksController extends BaseController
      * 根据图书馆ID查询最近借阅量
      */
     @GetMapping("/listRecentBorrows")
-    public AjaxResult listRecentBorrows() {
+    public AjaxResult listRecentBorrows() throws Exception {
         LocalDate today = LocalDate.now();
         LocalDate sevenDaysAgo = today.minusDays(7);
 
@@ -200,7 +202,7 @@ public class BooksController extends BaseController
         }
 
         // 预计借阅量列表
-        List<Integer> estimatedBorrowsCount = estimateFutureBorrowCounts(lastBorrowsCounts);
+        List<Integer> estimatedBorrowsCount = predictNextWeek(lastBorrowsCounts);
 
         System.out.println(lastBorrowsCounts);
         System.out.println(estimatedBorrowsCount);

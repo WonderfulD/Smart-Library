@@ -107,7 +107,7 @@ export default {
             center: ['50%', '38%'],
             data: chartData,
             animationEasing: 'cubicInOut',
-            animationDuration: 2600
+            animationDuration: 2000
           }
         ]
       });

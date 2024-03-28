@@ -21,9 +21,11 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.ruoyi.prediction.Prediction.predictNextWeek;
+
 /**
  * 图书借阅信息Controller
- * 
+ *
  * @author ruoyi
  * @date 2024-03-12
  */
@@ -95,81 +97,36 @@ public class BookBorrowingController extends BaseController
         return getDataTable(list);
     }
 
-    /** 根据当前登录管理员所在图书馆ID，查询会员数
+    /** 根据当前登录管理员所在图书馆ID，查询当前会员数
+     *
+     */
+    @GetMapping("/getTotalMembers")
+    public AjaxResult getTotalMembers() throws Exception {
+        LocalDate today = LocalDate.now();
+        Integer membersCounts = bookBorrowingService.countDistinctReaderIdsByDate(Date.from(today.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant()));
+        Map<String, Object> result = new HashMap<>();
+        result.put("MembersCounts", membersCounts);
+        return AjaxResult.success(result);
+    }
+
+
+    /** 根据当前登录管理员所在图书馆ID，查询会员数列表
      *
      */
     @GetMapping("/listRecentMembers")
-    public AjaxResult listRecentMembers() {
-        LocalDate today = LocalDate.now();
-        LocalDate sevenDaysAgo = today.minusDays(7);
+    public AjaxResult listRecentMembers() throws Exception {
+        LocalDate fourteenDaysAgo = LocalDate.now().minusDays(14);
 
-        // 获取当前图书馆的所有借阅信息
-        BookBorrowing bookBorrowing = new BookBorrowing();
-        bookBorrowing.setLibraryId(SecurityUtils.getDeptId());
-        List<BookBorrowing> bookBorrowingList = bookBorrowingService.selectBookBorrowingListByDept(bookBorrowing);
-
-        // 使用Set去重，存储不同的readerId
-        Map<LocalDate, Set<Long>> dailyMembers = new TreeMap<>();
-
-        // 初始化最近七天的会员集合
-        for (int i = 1; i < 8; i++) {
-            dailyMembers.put(sevenDaysAgo.plusDays(i), new HashSet<>());
-        }
-
-        // 遍历借阅信息，填充每天的会员集合
-        for (BookBorrowing borrowing : bookBorrowingList) {
-            LocalDate borrowDate = borrowing.getBorrowDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            if (!borrowDate.isBefore(sevenDaysAgo) && !borrowDate.isAfter(today)) {
-                dailyMembers.get(borrowDate).add(borrowing.getReaderId());
-            }
-        }
-
-        // 计算累计会员数量
-        List<Integer> recentMembersCounts = new ArrayList<>();
-        Set<Long> cumulativeMembers = new HashSet<>();
-        for (LocalDate date : dailyMembers.keySet()) {
-            cumulativeMembers.addAll(dailyMembers.get(date));
-            recentMembersCounts.add(cumulativeMembers.size());
-        }
-
-        LocalDate fourteenDaysAgo = today.minusDays(14);
-
-        // 使用Set去重，存储不同的readerId
-        Map<LocalDate, Set<Long>> lastFourteenToSevenDaysMembers = new TreeMap<>();
-
-        // 初始化最近七天的会员集合
-        for (int i = 1; i < 8; i++) {
-            lastFourteenToSevenDaysMembers.put(fourteenDaysAgo.plusDays(i), new HashSet<>());
-        }
-
-        // 遍历借阅信息，填充每天的会员集合
-        for (BookBorrowing borrowing : bookBorrowingList) {
-            LocalDate borrowDate = borrowing.getBorrowDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            if (!borrowDate.isBefore(fourteenDaysAgo) && !borrowDate.isAfter(sevenDaysAgo)) {
-                lastFourteenToSevenDaysMembers.get(borrowDate).add(borrowing.getReaderId());
-            }
-        }
-
-        // 计算累计会员数量
-        List<Integer> lastMembersCounts = new ArrayList<>();
-        Set<Long> lastFourteenToSevenDaysCumulativeMembers = new HashSet<>();
-        for (LocalDate date : lastFourteenToSevenDaysMembers.keySet()) {
-            lastFourteenToSevenDaysCumulativeMembers.addAll(lastFourteenToSevenDaysMembers.get(date));
-            lastMembersCounts.add(lastFourteenToSevenDaysCumulativeMembers.size());
-        }
-
-        // 预计会员数量列表
-        List<Integer> estimatedMembersCount = estimateFutureMemberCounts(lastMembersCounts);
-
-        System.out.println("lastFourteenToSevenDaysMembers" + lastFourteenToSevenDaysMembers);
-
-        System.out.println(lastMembersCounts);
-        System.out.println(estimatedMembersCount);
-
-        // 封装结果返回
         Map<String, Object> result = new HashMap<>();
-        result.put("recentMembersCounts", recentMembersCounts);
-        result.put("estimatedMembersCount", estimatedMembersCount);
+
+        List<Integer> totalMembersCounts = new ArrayList<>();
+
+        for (int i = 1; i < 15; i++) {
+            totalMembersCounts.add(bookBorrowingService.countDistinctReaderIdsByDate(Date.from(fourteenDaysAgo.plusDays(i).atStartOfDay().atZone(ZoneId.systemDefault()).toInstant())));
+        }
+
+        result.put("recentMembersCounts", totalMembersCounts.subList(7, 14));
+        result.put("estimatedMembersCount", predictNextWeek(totalMembersCounts.subList(0, 8)));
 
         return AjaxResult.success(result);
     }

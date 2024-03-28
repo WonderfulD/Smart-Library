@@ -1,5 +1,6 @@
 package com.ruoyi.borrow.service;
 
+import java.util.Date;
 import java.util.List;
 
 import com.ruoyi.book.domain.Books;
@@ -77,4 +78,14 @@ public interface IBookBorrowingService
      * @return 符合条件的图书借阅信息列表
      */
     List<Books> selectBookBorrowingListByReaderId(BookBorrowing bookBorrowing);
+
+
+
+    /**
+     * 根据借阅日期查询截止借阅日期的累计会员数
+     *
+     * @param date 借阅日期
+     * @return 符合条件的会员数
+     */
+    Integer countDistinctReaderIdsByDate(Date date);
 }

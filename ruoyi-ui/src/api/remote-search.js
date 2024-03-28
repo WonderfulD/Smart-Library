@@ -50,3 +50,13 @@ export function getRecentMembersCounts(query) {
     params: query
   })
 }
+
+export function getTotalMembers(query) {
+  return request({
+    url: '/borrow/BookBorrowing/getTotalMembers',
+    method: 'get',
+    params: query
+  })
+}
+
+

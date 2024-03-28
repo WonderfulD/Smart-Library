@@ -114,4 +114,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </select>
 
 
+    <select id="countDistinctReaderIdsByDate" parameterType="java.util.Date" resultType="int">
+        SELECT COUNT(DISTINCT reader_id)
+        FROM BookBorrowing
+        WHERE borrow_date &lt;= #{borrowDate}
+    </select>
+
+
 </mapper>

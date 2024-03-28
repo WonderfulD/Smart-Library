@@ -162,6 +162,13 @@
                 <version>${ruoyi.version}</version>
             </dependency>
 
+            <!-- Weka (machine learning) library -->
+            <dependency>
+                <groupId>nz.ac.waikato.cms.weka</groupId>
+                <artifactId>weka-stable</artifactId>
+                <version>3.8.5</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 

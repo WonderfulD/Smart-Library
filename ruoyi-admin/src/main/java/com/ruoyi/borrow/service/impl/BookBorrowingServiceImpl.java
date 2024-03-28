@@ -1,5 +1,6 @@
 package com.ruoyi.borrow.service.impl;
 
+import java.util.Date;
 import java.util.List;
 
 import com.ruoyi.book.domain.Books;
@@ -116,5 +117,16 @@ public class BookBorrowingServiceImpl implements IBookBorrowingService
     @Override
     public List<Books> selectBookBorrowingListByReaderId(BookBorrowing bookBorrowing) {
         return bookBorrowingMapper.selectBookBorrowingListByReaderId(bookBorrowing);
+    }
+
+    /**
+     * 根据借阅日期查询截止借阅日期的累计会员数
+     *
+     * @param date 借阅日期
+     * @return 符合条件的会员数
+     */
+    @Override
+    public Integer countDistinctReaderIdsByDate(Date date) {
+        return bookBorrowingMapper.countDistinctReaderIdsByDate(date);
     }
 }

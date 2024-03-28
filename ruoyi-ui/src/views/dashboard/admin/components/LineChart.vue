@@ -87,6 +87,7 @@ export default {
   },
   methods: {
     initChart() {
+      console.log("进入initChart");
       this.chart = echarts.init(this.$el, 'macarons')
       this.setOptions(this.chartData)
     },
@@ -154,7 +155,7 @@ export default {
             }
           },
           data: actualData,
-          animationDuration: 2800,
+          animationDuration: 2000,
           animationEasing: 'quadraticOut'
         }]
       })

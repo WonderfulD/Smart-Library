@@ -3,7 +3,7 @@
 
     <panel-group @handleSetLineChartData="handleSetLineChartData" />
 
-    <el-row style="background:#fff;padding:16px 16px 0;margin-bottom:32px;">
+    <el-row v-if="isDataLoaded" style="background:#fff;padding:16px 16px 0;margin-bottom:32px;">
       <line-chart :chart-data="lineChartData" />
     </el-row>
 
@@ -55,8 +55,8 @@ import {getRecentBooksCounts, getRecentBorrowsCounts, getRecentMembersCounts} fr
 
 const lineChartData = {
   recentBooksCounts: {
-    expectedData: [100, 120, 161, 134, 105, 160, 165],
-    actualData: [120, 82, 91, 154, 162, 140, 145]
+    expectedData: [5, 5, 5, 5, 5, 5, 5],
+    actualData: [5, 5, 5, 5, 5, 5, 5]
   },
   recentBorrowsCounts: {
     expectedData: [200, 192, 120, 144, 160, 130, 140],
@@ -88,24 +88,26 @@ export default {
   data() {
     return {
       lineChartData: lineChartData.recentBooksCounts,
+      isDataLoaded: false, // 数据加载状态标志
     }
   },
   methods: {
-    fetchRecentBooksCounts() {
+    async fetchRecentBooksCounts() {
       getRecentBooksCounts().then(response => {
         lineChartData.recentBooksCounts.actualData = response.data.recentBooksCounts;
         lineChartData.recentBooksCounts.expectedData = response.data.estimatedBooksCount;
       })
     },
 
-    fetchRecentBorrowsCounts() {
+    async fetchRecentBorrowsCounts() {
       getRecentBorrowsCounts().then(response => {
         lineChartData.recentBorrowsCounts.actualData = response.data.recentBorrowsCounts;
         lineChartData.recentBorrowsCounts.expectedData = response.data.estimatedBorrowsCount;
       })
+      console.log("fetchRecentBooksCounts已结束");
     },
 
-    fetchRecentMembersCounts() {
+    async fetchRecentMembersCounts() {
       getRecentMembersCounts().then(response => {
         lineChartData.recentReadersCounts.actualData = response.data.recentMembersCounts;
         lineChartData.recentReadersCounts.expectedData = response.data.estimatedMembersCount;
@@ -116,10 +118,14 @@ export default {
       this.lineChartData = lineChartData[type]
     }
   },
-  mounted() {
-    this.fetchRecentBooksCounts();
-    this.fetchRecentBorrowsCounts();
-    this.fetchRecentMembersCounts();
+  async created() {
+    await Promise.all([
+      this.fetchRecentBooksCounts(),
+      this.fetchRecentBorrowsCounts(),
+      this.fetchRecentMembersCounts()
+    ]);
+    this.isDataLoaded = true; // 更新数据加载状态
+    console.log("改isDataLoaded了");
   },
 }
 </script>
