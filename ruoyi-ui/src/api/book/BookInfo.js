@@ -78,3 +78,15 @@ export function returnBook(data) {
     data: data
   });
 }
+
+//根据借阅人ID查询应还图书列表
+export function getReturnListWithStatusByReaderId(query) {
+  return request({
+    url: '/book/BookInfo/returnListWithStatusByReader',
+    method: 'get',
+    params: query
+  })
+}
+
+
+

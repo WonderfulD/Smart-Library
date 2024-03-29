@@ -1,6 +1,5 @@
 package com.ruoyi.borrow.controller;
 
-import com.ruoyi.book.domain.Books;
 import com.ruoyi.borrow.domain.BookBorrowing;
 import com.ruoyi.borrow.service.IBookBorrowingService;
 import com.ruoyi.common.annotation.Log;
@@ -15,13 +14,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.ruoyi.prediction.Prediction.predictNextWeek;
+import static com.ruoyi.sort.BookBorrowingSorter.sortBookBorrowingsByBorrowDateDesc;
+
 
 /**
  * 图书借阅信息Controller
@@ -48,27 +47,43 @@ public class BookBorrowingController extends BaseController
         return getDataTable(list);
     }
 
-
     /**
-     * 查询图书借阅信息列表，并添加借阅状态
+     * 根据图书馆Id查询图书借阅信息列表，并添加借阅状态
      */
     @PreAuthorize("@ss.hasPermi('borrow:BookBorrowing:list')")
     @GetMapping("/listWithStatus")
     public TableDataInfo listWithStatus(BookBorrowing bookBorrowing) {
-        startPage();
         bookBorrowing.setLibraryId(SecurityUtils.getDeptId());
         List<BookBorrowing> list = bookBorrowingService.selectBookBorrowingListByDept(bookBorrowing);
         for (BookBorrowing borrowing : list) {
-            borrowing.setStatus(getBorrowingStatus(borrowing));
+            borrowing.setStatus((long) getBorrowingStatus(borrowing));
         }
-        return getDataTable(list);
+        return getDataTable(sortBookBorrowingsByBorrowDateDesc(list));
+    }
+
+    /**
+     * 根据读者Id查询图书借阅信息列表，并添加借阅状态
+     */
+    @PreAuthorize("@ss.hasPermi('borrowbrowsing:BorrowBrowsing')")
+    @GetMapping("/listWithStatusByReaderId")
+    public TableDataInfo listWithStatusByReaderId(BookBorrowing bookBorrowing) {
+        bookBorrowing.setReaderId(SecurityUtils.getUserId());
+        List<BookBorrowing> list = bookBorrowingService.selectBookBorrowingListByReaderId(bookBorrowing);
+        for (BookBorrowing borrowing : list) {
+            borrowing.setStatus((long) getBorrowingStatus(borrowing));
+        }
+        return getDataTable(sortBookBorrowingsByBorrowDateDesc(list));
     }
 
     /**
      * 获取借阅状态
      */
-    private int getBorrowingStatus(BookBorrowing borrowing) {
-        if (borrowing.getReturnDate() != null) {
+    public static int getBorrowingStatus(BookBorrowing borrowing) {
+        if (borrowing.getPendingStatus() == 0L) {
+          return 5;       //
+        } else if (borrowing.getDueDate() == null) {
+            return 4;     //待审核
+        } else if (borrowing.getReturnDate() != null) {
             if (borrowing.getReturnDate().compareTo(borrowing.getDueDate()) <= 0) {
                 return 0; //如期归还
             } else {
@@ -97,6 +112,22 @@ public class BookBorrowingController extends BaseController
         return getDataTable(list);
     }
 
+
+    /**
+     * 根据当前登录管理员所在图书馆ID，查询图书借阅待审批列表
+     */
+//    @PreAuthorize("@ss.hasPermi('borrow:BookBorrowing:list')")
+    @GetMapping("/listPendingByDept")
+    public TableDataInfo listPendingByDept(BookBorrowing bookBorrowing) {
+        startPage();
+        bookBorrowing.setLibraryId(SecurityUtils.getDeptId()); // 设置当前用户所在部门ID
+        bookBorrowing.setPendingStatus(2L);
+        List<BookBorrowing> list = bookBorrowingService.selectBookBorrowingListByDept(bookBorrowing);
+        return getDataTable(list);
+    }
+
+
+
     /** 根据当前登录管理员所在图书馆ID，查询当前会员数
      *
      */
@@ -124,6 +155,8 @@ public class BookBorrowingController extends BaseController
         for (int i = 1; i < 15; i++) {
             totalMembersCounts.add(bookBorrowingService.countDistinctReaderIdsByDate(Date.from(fourteenDaysAgo.plusDays(i).atStartOfDay().atZone(ZoneId.systemDefault()).toInstant())));
         }
+
+        System.out.println("totalMembersCounts:" + totalMembersCounts);
 
         result.put("recentMembersCounts", totalMembersCounts.subList(7, 14));
         result.put("estimatedMembersCount", predictNextWeek(totalMembersCounts.subList(0, 8)));

@@ -77,7 +77,7 @@ public interface IBookBorrowingService
      * @param bookBorrowing 包含查询条件的实体，包括借阅人ID
      * @return 符合条件的图书借阅信息列表
      */
-    List<Books> selectBookBorrowingListByReaderId(BookBorrowing bookBorrowing);
+    List<BookBorrowing> selectBookBorrowingListByReaderId(BookBorrowing bookBorrowing);
 
 
 

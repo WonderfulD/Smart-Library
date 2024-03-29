@@ -17,6 +17,15 @@ export function getBookBorrowing(borrowId) {
   })
 }
 
+
+// 查询图书借阅审批列表
+export function listPendingByDept(borrowId) {
+  return request({
+    url: '/borrow/BookBorrowing/listPendingByDept',
+    method: 'get'
+  })
+}
+
 // 新增图书借阅信息
 export function addBookBorrowing(data) {
   return request({
@@ -47,6 +56,16 @@ export function delBookBorrowing(borrowId) {
 export function listBookBorrowingByDept(query) {
   return request({
     url: '/borrow/BookBorrowing/listByDept',
+    method: 'get',
+    params: query
+  })
+}
+
+
+//根据读者Id查询图书借阅信息列表，并添加借阅状态
+export function listWithStatusByReaderId(query) {
+  return request({
+    url: '/borrow/BookBorrowing/listWithStatusByReaderId',
     method: 'get',
     params: query
   })

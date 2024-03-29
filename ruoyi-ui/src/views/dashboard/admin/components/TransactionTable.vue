@@ -51,7 +51,7 @@ export default {
   methods: {
     fetchData() {
       transactionList(this.queryParams).then(response => {
-        this.list = response.rows.slice(0, 8) // 限制显示行数为8，根据需要调整
+        this.list = response.rows.slice(0, 9) // 限制显示行数为8，根据需要调整
       })
     },
     borrowStatusTag(status) {
@@ -61,11 +61,13 @@ export default {
         case 1:
           return 'Brand Color'; // 借阅正常
         case 2:
-          return 'warning'; // 逾期归还
+          return 'Info'; // 逾期归还
         case 3:
           return 'danger'; // 逾期未还
-        default:
-          return 'info'; // 未知状态
+        case 4:
+          return 'warning'; // 待审核
+        case 5:
+          return 'danger'; // 借阅拒绝
       }
     },
     borrowStatusText(status) {
@@ -78,8 +80,10 @@ export default {
           return '逾期归还';
         case 3:
           return '逾期未还';
-        default:
-          return '未知状态';
+        case 4:
+          return '等待审核';
+        case 5:
+          return '借阅拒绝';
       }
     }
   }

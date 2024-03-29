@@ -115,7 +115,7 @@ public class BookBorrowingServiceImpl implements IBookBorrowingService
      * @return 符合条件的图书借阅信息列表
      */
     @Override
-    public List<Books> selectBookBorrowingListByReaderId(BookBorrowing bookBorrowing) {
+    public List<BookBorrowing> selectBookBorrowingListByReaderId(BookBorrowing bookBorrowing) {
         return bookBorrowingMapper.selectBookBorrowingListByReaderId(bookBorrowing);
     }
 

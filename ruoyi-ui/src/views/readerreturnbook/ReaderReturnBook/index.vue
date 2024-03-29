@@ -66,13 +66,12 @@
           <span>{{ parseTime(scope.row.dueDate, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="实际还书日期" align="center" prop="returnDate" width="180">
+      <el-table-column label="借阅状态" align="center" prop="status">
         <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.returnDate, '{y}-{m}-{d}') }}</span>
+          <dict-tag :options="dict.type.latest_borrow_status" :value="scope.row.status"/>
         </template>
       </el-table-column>
       <el-table-column label="逾期罚款" align="center" prop="fine" />
-      <el-table-column label="借阅备注" align="center" prop="comments" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -144,17 +143,20 @@
 
 <script>
 import {
-  listBookBorrowing,
   getBookBorrowing,
   delBookBorrowing,
   addBookBorrowing,
   updateBookBorrowing,
   listBookBorrowingByDept
 } from "@/api/borrow/BookBorrowing";
-import {borrowBook, listBookBorrowingListByReaderId, returnBook} from "@/api/book/BookInfo";
+import {
+  getReturnListWithStatusByReaderId,
+  returnBook
+} from "@/api/book/BookInfo";
 
 export default {
   name: "BookBorrowing",
+  dicts: ['latest_borrow_status'],
   data() {
     return {
       // 遮罩层
@@ -184,6 +186,7 @@ export default {
         readerId: null,
         borrowDate: null,
         dueDate: null,
+        pendingStatus: null
       },
       // 表单参数
       form: {},
@@ -214,7 +217,7 @@ export default {
     /** 根据当前登录管理员所在图书馆（部门）id查询图书借阅信息列表 */
     getList() {
       this.loading = true;
-      listBookBorrowingListByReaderId(this.queryParams).then(response => {
+      getReturnListWithStatusByReaderId(this.queryParams).then(response => {
         this.BookBorrowingList = response.rows;
         this.total = response.total;
         this.loading = false;
@@ -236,7 +239,8 @@ export default {
         dueDate: null,
         returnDate: null,
         fine: null,
-        comments: null
+        comments: null,
+        pendingStatus: null
       };
       this.resetForm("form");
     },

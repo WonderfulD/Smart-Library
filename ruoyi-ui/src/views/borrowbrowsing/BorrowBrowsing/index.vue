@@ -17,28 +17,20 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="读者号" prop="readerId">
-        <el-input
-          v-model="queryParams.readerId"
-          placeholder="请输入读者号"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
       <el-form-item label="借出日期" prop="borrowDate">
         <el-date-picker clearable
-          v-model="queryParams.borrowDate"
-          type="date"
-          value-format="yyyy-MM-dd"
-          placeholder="请选择借出日期">
+                        v-model="queryParams.borrowDate"
+                        type="date"
+                        value-format="yyyy-MM-dd"
+                        placeholder="请选择借出日期">
         </el-date-picker>
       </el-form-item>
       <el-form-item label="应还日期" prop="dueDate">
         <el-date-picker clearable
-          v-model="queryParams.dueDate"
-          type="date"
-          value-format="yyyy-MM-dd"
-          placeholder="请选择应还日期">
+                        v-model="queryParams.dueDate"
+                        type="date"
+                        value-format="yyyy-MM-dd"
+                        placeholder="请选择应还日期">
         </el-date-picker>
       </el-form-item>
       <el-form-item>
@@ -50,44 +42,11 @@
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button
-          type="primary"
-          plain
-          icon="el-icon-plus"
-          size="mini"
-          @click="handleAdd"
-          v-hasPermi="['borrow:BookBorrowing:add']"
-        >新增</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="success"
-          plain
-          icon="el-icon-edit"
-          size="mini"
-          :disabled="single"
-          @click="handleUpdate"
-          v-hasPermi="['borrow:BookBorrowing:edit']"
-        >修改</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="danger"
-          plain
-          icon="el-icon-delete"
-          size="mini"
-          :disabled="multiple"
-          @click="handleDelete"
-          v-hasPermi="['borrow:BookBorrowing:remove']"
-        >删除</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
           type="warning"
           plain
           icon="el-icon-download"
           size="mini"
           @click="handleExport"
-          v-hasPermi="['borrow:BookBorrowing:export']"
         >导出</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
@@ -97,7 +56,6 @@
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="借阅号" align="center" prop="borrowId" />
       <el-table-column label="书籍编号" align="center" prop="bookId" />
-      <el-table-column label="读者号" align="center" prop="readerId" />
       <el-table-column label="借出日期" align="center" prop="borrowDate" width="180">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.borrowDate, '{y}-{m}-{d}') }}</span>
@@ -113,28 +71,20 @@
           <span>{{ parseTime(scope.row.returnDate, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="逾期罚款" align="center" prop="fine" />
       <el-table-column label="借阅状态" align="center" prop="status">
         <template slot-scope="scope">
           <dict-tag :options="dict.type.latest_borrow_status" :value="scope.row.status"/>
         </template>
       </el-table-column>
+      <el-table-column label="逾期罚款" align="center" prop="fine" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
             size="mini"
             type="text"
-            icon="el-icon-edit"
-            @click="handleUpdate(scope.row)"
-            v-hasPermi="['borrow:BookBorrowing:edit']"
-          >修改</el-button>
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-delete"
-            @click="handleDelete(scope.row)"
-            v-hasPermi="['borrow:BookBorrowing:remove']"
-          >删除</el-button>
+            icon="el-icon-chat-round"
+            @click="handleChat(scope.row)"
+          >联系图书馆</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -158,18 +108,18 @@
         </el-form-item>
         <el-form-item label="借出日期" prop="borrowDate">
           <el-date-picker clearable
-            v-model="form.borrowDate"
-            type="date"
-            value-format="yyyy-MM-dd"
-            placeholder="请选择借出日期">
+                          v-model="form.borrowDate"
+                          type="date"
+                          value-format="yyyy-MM-dd"
+                          placeholder="请选择借出日期">
           </el-date-picker>
         </el-form-item>
         <el-form-item label="应还日期" prop="dueDate">
           <el-date-picker clearable
-            v-model="form.dueDate"
-            type="date"
-            value-format="yyyy-MM-dd"
-            placeholder="请选择应还日期">
+                          v-model="form.dueDate"
+                          type="date"
+                          value-format="yyyy-MM-dd"
+                          placeholder="请选择应还日期">
           </el-date-picker>
         </el-form-item>
         <el-form-item label="借阅备注" prop="comments">
@@ -186,14 +136,12 @@
 
 <script>
 import {
-  listBookBorrowing,
   getBookBorrowing,
   delBookBorrowing,
   addBookBorrowing,
-  updateBookBorrowing,
-  listBookBorrowingByDept
+  updateBookBorrowing, listWithStatusByReaderId
 } from "@/api/borrow/BookBorrowing";
-import {transactionList} from "@/api/remote-search";
+import {returnBook} from "@/api/book/BookInfo";
 
 export default {
   name: "BookBorrowing",
@@ -227,7 +175,6 @@ export default {
         readerId: null,
         borrowDate: null,
         dueDate: null,
-        status: null,
         pendingStatus: null
       },
       // 表单参数
@@ -259,13 +206,12 @@ export default {
     /** 根据当前登录管理员所在图书馆（部门）id查询图书借阅信息列表 */
     getList() {
       this.loading = true;
-      transactionList(this.queryParams).then(response => {
+      listWithStatusByReaderId(this.queryParams).then(response => {
         this.BookBorrowingList = response.rows;
         this.total = response.total;
         this.loading = false;
       })
     },
-
     // 取消按钮
     cancel() {
       this.open = false;
@@ -283,7 +229,6 @@ export default {
         returnDate: null,
         fine: null,
         comments: null,
-        status: null,
         pendingStatus: null
       };
       this.resetForm("form");
@@ -298,7 +243,7 @@ export default {
       this.resetForm("queryForm");
       this.handleQuery();
     },
-    /** 多选框选中数据 */
+    // 多选框选中数据
     handleSelectionChange(selection) {
       this.ids = selection.map(item => item.borrowId)
       this.single = selection.length!==1
@@ -310,6 +255,46 @@ export default {
       this.open = true;
       this.title = "添加图书借阅信息";
     },
+
+    /** 归还按钮操作 */
+    handleReturn(row) {
+      // 事务管理，设置图书状态为已归还+修改借阅记录的归还日期至借阅表必须支持原子性
+      const today = new Date();
+
+      const borrowInfo = {
+        bookId: row.bookId,
+        borrowId: row.borrowId,
+        dueDate: row.dueDate,
+        returnDate: today.toISOString().split('T')[0], // 格式化日期为YYYY-MM-DD
+      };
+
+      console.log(borrowInfo);
+      // 调用API函数，传入借阅信息
+      returnBook(borrowInfo).then(response => {
+        if (response.code === 200) {
+          // 归还成功
+          this.$message.success('归还成功');
+          this.getList();
+        } else {
+          // 后端返回了错误状态，归还失败
+          this.$message.error(response.message || '归还失败');
+        }
+      }).catch(error => {
+        // 请求发送失败或后端抛出异常
+        console.error('Return operation failed:', error);
+        this.$message.error('归还失败，请稍后再试');
+      });
+    },
+
+    /** 申请延长归还日期按钮操作 */
+    handleExtension(row) {
+
+    },
+
+    /** 联系图书馆按钮操作 */
+    handleChat(row) {
+    },
+
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.reset();

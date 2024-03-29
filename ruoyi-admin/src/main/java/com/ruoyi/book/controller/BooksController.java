@@ -32,6 +32,7 @@ import com.ruoyi.borrow.service.IBookBorrowingService;
 
 import java.util.stream.Collectors;
 
+import static com.ruoyi.borrow.controller.BookBorrowingController.getBorrowingStatus;
 import static com.ruoyi.prediction.Prediction.predictNextWeek;
 
 /**
@@ -263,8 +264,30 @@ public class BooksController extends BaseController
     {
         startPage();
         bookBorrowing.setReaderId(SecurityUtils.getUserId()); // 设置当前用户ID
-        List<Books> list = bookBorrowingService.selectBookBorrowingListByReaderId(bookBorrowing);
+        List<BookBorrowing> list = bookBorrowingService.selectBookBorrowingListByReaderId(bookBorrowing);
         return getDataTable(list);
+    }
+
+
+    /**
+     * 根据借阅人ID查询应还图书列表，并添加借阅状态
+     */
+//    @PreAuthorize("@ss.hasPermi('book:BookInfo:list')")
+    @GetMapping("/returnListWithStatusByReader")
+    public TableDataInfo returnListWithStatusByReader(BookBorrowing bookBorrowing)
+    {
+        startPage();
+        bookBorrowing.setReaderId(SecurityUtils.getUserId()); // 设置当前用户ID
+        bookBorrowing.setPendingStatus(1L);
+        List<BookBorrowing> list = bookBorrowingService.selectBookBorrowingListByReaderId(bookBorrowing);
+        List<BookBorrowing> returnlist = new ArrayList<>();
+        for (BookBorrowing borrowing : list) {
+             if (borrowing.getReturnDate() == null) {
+                 returnlist.add(borrowing);
+                 borrowing.setStatus((long) getBorrowingStatus(borrowing));
+             }
+        }
+        return getDataTable(returnlist);
     }
 
 
@@ -341,23 +364,19 @@ public class BooksController extends BaseController
                 return AjaxResult.error("图书不存在");
             }
             // 检查图书是否已借出
-            if (book.getStatus() == 1) {
+            if (book.getStatus() == 0 || book.getStatus() == 2 ) {
                 return AjaxResult.error("图书已被借出");
             }
-            // 更新图书状态为借出
-            book.setStatus(1L);
-            booksService.updateBooks(book);
+
             Long readerId = request.getReaderId();
             Long libraryId = request.getLibraryId();
             Date borrowDate = request.getBorrowDate();
-            Date dueDate = request.getDueDate();
             // 创建并保存借阅记录
             BookBorrowing bookBorrowing = new BookBorrowing();
             bookBorrowing.setBookId(bookId);
             bookBorrowing.setReaderId(readerId);
             bookBorrowing.setLibraryId(libraryId);
             bookBorrowing.setBorrowDate(borrowDate);
-            bookBorrowing.setDueDate(dueDate);
 
             //设置borrowId为日期+随机数
             long timestamp = new Date().getTime();
@@ -365,15 +384,18 @@ public class BooksController extends BaseController
             long borrowId = (timestamp % 100000000L) * 1000 + randomNumber; // 确保borrowId适合Long存储
             bookBorrowing.setBorrowId(borrowId); // 设置生成的借阅编号
 
-            //设置借阅状态
-            bookBorrowing.setStatus(0);
+            //设置借阅状态待审核
+            bookBorrowing.setPendingStatus(2L);
 
             //设置借阅备注
-            bookBorrowing.setComments("已借出");
+            bookBorrowing.setComments("");
 
             bookBorrowingService.insertBookBorrowing(bookBorrowing);
+            // 更新图书状态为待审核
+            book.setStatus(2L);
+            booksService.updateBooks(book);
 
-            return AjaxResult.success("借阅成功");
+            return AjaxResult.success("借阅成功，待审核");
         } catch (Exception e) {
             // 如果有任何异常，Spring会回滚事务
             e.printStackTrace();

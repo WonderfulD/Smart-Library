@@ -310,15 +310,15 @@ export default {
       const readerId = this.$store.state.user.id;
       const libraryId = row.libraryId;
       const today = new Date();
-      const dueDate = new Date(today);
-      dueDate.setDate(dueDate.getDate() + 30);// 假设借阅期限是30天
+      // const dueDate = new Date(today);
+      // dueDate.setDate(dueDate.getDate() + 30);// 假设借阅期限是30天
 
       const borrowInfo = {
         bookId: row.bookId,
         readerId: readerId,
         libraryId: libraryId,
         borrowDate: today.toISOString().split('T')[0], // 格式化日期为YYYY-MM-DD
-        dueDate: dueDate.toISOString().split('T')[0], // 格式化日期为YYYY-MM-DD
+        // dueDate: dueDate.toISOString().split('T')[0], // 格式化日期为YYYY-MM-DD
       };
 
       console.log(borrowInfo);
@@ -326,7 +326,7 @@ export default {
       borrowBook(borrowInfo).then(response => {
         if (response.code === 200) {
           // 借阅成功
-          this.$message.success('借阅成功');
+          this.$message.success('借阅成功，待审核');
           this.getList();
         } else {
           // 后端返回了错误状态，借阅失败

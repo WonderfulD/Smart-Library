@@ -55,7 +55,14 @@ public class Prediction {
 
     public static void main(String[] args) throws Exception {
         // 上一周每天的累计会员数
-        List<Integer> lastWeekMembers = List.of(1, 1, 1, 1, 1, 3, 3);
+        List<Integer> lastWeekMembers = new ArrayList<>();
+        lastWeekMembers.add(1);
+        lastWeekMembers.add(1);
+        lastWeekMembers.add(1);
+        lastWeekMembers.add(1);
+        lastWeekMembers.add(1);
+        lastWeekMembers.add(3);
+        lastWeekMembers.add(3);
         List<Integer> nextWeekMembers = predictNextWeek(lastWeekMembers);
         System.out.println("预测下一周每天的累计会员数: " + nextWeekMembers);
     }

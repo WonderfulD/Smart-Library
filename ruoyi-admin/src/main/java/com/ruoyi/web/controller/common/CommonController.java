@@ -112,6 +112,7 @@ public class CommonController
             for (MultipartFile file : files)
             {
                 // 上传并返回新文件名称
+//                String fileName = "/prod-api" + FileUploadUtils.upload(filePath, file);
                 String fileName = FileUploadUtils.upload(filePath, file);
                 String url = serverConfig.getUrl() + fileName;
                 urls.add(url);

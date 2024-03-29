@@ -20,9 +20,9 @@
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            借阅总量
+            借阅总数
           </div>
-          <count-to :start-val="0" :end-val=borrowsCount :duration="3000" class="card-panel-num" />
+          <count-to :start-val="0" :end-val=borrowsCount :duration="2600" class="card-panel-num" />
         </div>
       </div>
     </el-col>
@@ -35,20 +35,20 @@
           <div class="card-panel-text">
             会员数
           </div>
-          <count-to :start-val="0" :end-val=membersCount :duration="3200" class="card-panel-num" />
+          <count-to :start-val="0" :end-val=membersCount :duration="2600" class="card-panel-num" />
         </div>
       </div>
     </el-col>
     <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-      <div class="card-panel" @click="handleSetLineChartData('shoppings')">
+      <div class="card-panel" @click="handleSetLineChartData('ratings')">
         <div class="card-panel-icon-wrapper icon-star">
           <svg-icon icon-class="star" class-name="card-panel-icon" />
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            评分
+            会员满意度
           </div>
-          <count-to :start-val="0" :end-val="5" :duration="3600" class="card-panel-num" />
+          <count-to :start-val="0" :end-val="93" :duration="2600" class="card-panel-num" />
         </div>
       </div>
     </el-col>

@@ -23,6 +23,14 @@
         <span>逾期未还</span>
         <el-progress :percentage="notReturnedPercent" />
       </div>
+      <div class="progress-item">
+        <span>等待审核</span>
+        <el-progress :percentage="pendingPercent" />
+      </div>
+      <div class="progress-item">
+        <span>借阅拒绝</span>
+        <el-progress :percentage="rejectPercent" />
+      </div>
     </div>
   </el-card>
 </template>
@@ -41,6 +49,8 @@ export default {
       borrowingNormalPercent: 0,
       returnLatePercent: 0,
       notReturnedPercent: 0,
+      pendingPercent: 0,
+      rejectPercent: 0,
       libraryBackgroundImage: '', // 存储背景图片路径
       libraryLogoImage: '', // 存储logo图片路径
     }
@@ -60,10 +70,12 @@ export default {
         }, {});
 
         // 根据状态计算百分比
-        this.returnOnTimePercent = Number(((statusCounts[0] || 0) / total * 100).toFixed(2));
-        this.borrowingNormalPercent = Number(((statusCounts[1] || 0) / total * 100).toFixed(2));
-        this.returnLatePercent = Number(((statusCounts[2] || 0) / total * 100).toFixed(2));
-        this.notReturnedPercent = Number(((statusCounts[3] || 0) / total * 100).toFixed(2));
+        this.returnOnTimePercent = Number(((statusCounts[0] || 0) / total * 100).toFixed(1));
+        this.borrowingNormalPercent = Number(((statusCounts[1] || 0) / total * 100).toFixed(1));
+        this.returnLatePercent = Number(((statusCounts[2] || 0) / total * 100).toFixed(1));
+        this.notReturnedPercent = Number(((statusCounts[3] || 0) / total * 100).toFixed(1));
+        this.pendingPercent = Number(((statusCounts[4] || 0) / total * 100).toFixed(1));
+        this.rejectPercent = Number(((statusCounts[5] || 0) / total * 100).toFixed(1));
       })
     },
     fetchLibraryIdAndSetBackgroundImage() {

@@ -59,14 +59,26 @@ public class BookBorrowing extends BaseEntity
 
     /** 借阅状态 */
     @Excel(name = "借阅状态")
-    private int status;
+    private Long status;
 
-    public int getStatus() {
+    /** 审核状态 */
+    @Excel(name = "审核状态")
+    private Long pendingStatus;
+
+    public Long getStatus() {
         return status;
     }
 
-    public void setStatus(int status) {
+    public void setStatus(Long status) {
         this.status = status;
+    }
+
+    public Long getPendingStatus() {
+        return pendingStatus;
+    }
+
+    public void setPendingStatus(Long pendingStatus) {
+        this.pendingStatus = pendingStatus;
     }
 
     public void setBorrowId(Long borrowId)
