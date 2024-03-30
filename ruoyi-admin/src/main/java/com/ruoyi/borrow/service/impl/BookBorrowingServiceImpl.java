@@ -129,4 +129,17 @@ public class BookBorrowingServiceImpl implements IBookBorrowingService
     public Integer countDistinctReaderIdsByDate(Date date) {
         return bookBorrowingMapper.countDistinctReaderIdsByDate(date);
     }
+
+
+
+    /**
+     * 查询已通过审核未还的书籍借阅列表
+     *
+     * @param bookBorrowing 包含查询条件的实体，包括节约审核情况
+     * @return 符合条件的图书借阅信息列表
+     */
+    @Override
+    public List<BookBorrowing> selectBookBorrowingByPendingStatusWithNullReturnDate(BookBorrowing bookBorrowing) {
+        return bookBorrowingMapper.selectBookBorrowingByPendingStatusWithNullReturnDate(bookBorrowing);
+    }
 }

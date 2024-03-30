@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.borrowrating.mapper.BorrowRatingsMapper">
+    
+    <resultMap type="BorrowRatings" id="BorrowRatingsResult">
+        <result property="borrowId"    column="borrow_id"    />
+        <result property="bookId"    column="book_id"    />
+        <result property="readerId"    column="reader_id"    />
+        <result property="libraryId"    column="library_id"    />
+        <result property="discoveryChannel"    column="discovery_channel"    />
+        <result property="selectionReasons"    column="selection_reasons"    />
+        <result property="borrowingSatisfaction"    column="borrowing_satisfaction"    />
+        <result property="bookQualitySatisfaction"    column="book_quality_satisfaction"    />
+        <result property="librarySatisfaction"    column="library_satisfaction"    />
+        <result property="recommendationWillingness"    column="recommendation_willingness"    />
+        <result property="suggestions"    column="suggestions"    />
+    </resultMap>
+
+    <sql id="selectBorrowRatingsVo">
+        select borrow_id, book_id, reader_id, library_id, discovery_channel, selection_reasons, borrowing_satisfaction, book_quality_satisfaction, library_satisfaction, recommendation_willingness, suggestions from borrow_ratings
+    </sql>
+
+    <select id="selectBorrowRatingsList" parameterType="BorrowRatings" resultMap="BorrowRatingsResult">
+        <include refid="selectBorrowRatingsVo"/>
+        <where>  
+            <if test="borrowId != null "> and borrow_id = #{borrowId}</if>
+            <if test="bookId != null "> and book_id = #{bookId}</if>
+            <if test="readerId != null "> and reader_id = #{readerId}</if>
+            <if test="libraryId != null "> and library_id = #{libraryId}</if>
+            <if test="discoveryChannel != null "> and discovery_channel = #{discoveryChannel}</if>
+            <if test="selectionReasons != null  and selectionReasons != ''"> and selection_reasons = #{selectionReasons}</if>
+            <if test="borrowingSatisfaction != null "> and borrowing_satisfaction = #{borrowingSatisfaction}</if>
+            <if test="bookQualitySatisfaction != null "> and book_quality_satisfaction = #{bookQualitySatisfaction}</if>
+            <if test="librarySatisfaction != null "> and library_satisfaction = #{librarySatisfaction}</if>
+            <if test="recommendationWillingness != null "> and recommendation_willingness = #{recommendationWillingness}</if>
+            <if test="suggestions != null  and suggestions != ''"> and suggestions = #{suggestions}</if>
+        </where>
+    </select>
+    
+    <select id="selectBorrowRatingsByBorrowId" parameterType="Long" resultMap="BorrowRatingsResult">
+        <include refid="selectBorrowRatingsVo"/>
+        where borrow_id = #{borrowId}
+    </select>
+        
+    <insert id="insertBorrowRatings" parameterType="BorrowRatings">
+        insert into borrow_ratings
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="borrowId != null">borrow_id,</if>
+            <if test="bookId != null">book_id,</if>
+            <if test="readerId != null">reader_id,</if>
+            <if test="libraryId != null">library_id,</if>
+            <if test="discoveryChannel != null">discovery_channel,</if>
+            <if test="selectionReasons != null">selection_reasons,</if>
+            <if test="borrowingSatisfaction != null">borrowing_satisfaction,</if>
+            <if test="bookQualitySatisfaction != null">book_quality_satisfaction,</if>
+            <if test="librarySatisfaction != null">library_satisfaction,</if>
+            <if test="recommendationWillingness != null">recommendation_willingness,</if>
+            <if test="suggestions != null">suggestions,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="borrowId != null">#{borrowId},</if>
+            <if test="bookId != null">#{bookId},</if>
+            <if test="readerId != null">#{readerId},</if>
+            <if test="libraryId != null">#{libraryId},</if>
+            <if test="discoveryChannel != null">#{discoveryChannel},</if>
+            <if test="selectionReasons != null">#{selectionReasons},</if>
+            <if test="borrowingSatisfaction != null">#{borrowingSatisfaction},</if>
+            <if test="bookQualitySatisfaction != null">#{bookQualitySatisfaction},</if>
+            <if test="librarySatisfaction != null">#{librarySatisfaction},</if>
+            <if test="recommendationWillingness != null">#{recommendationWillingness},</if>
+            <if test="suggestions != null">#{suggestions},</if>
+         </trim>
+    </insert>
+
+    <update id="updateBorrowRatings" parameterType="BorrowRatings">
+        update borrow_ratings
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="bookId != null">book_id = #{bookId},</if>
+            <if test="readerId != null">reader_id = #{readerId},</if>
+            <if test="libraryId != null">library_id = #{libraryId},</if>
+            <if test="discoveryChannel != null">discovery_channel = #{discoveryChannel},</if>
+            <if test="selectionReasons != null">selection_reasons = #{selectionReasons},</if>
+            <if test="borrowingSatisfaction != null">borrowing_satisfaction = #{borrowingSatisfaction},</if>
+            <if test="bookQualitySatisfaction != null">book_quality_satisfaction = #{bookQualitySatisfaction},</if>
+            <if test="librarySatisfaction != null">library_satisfaction = #{librarySatisfaction},</if>
+            <if test="recommendationWillingness != null">recommendation_willingness = #{recommendationWillingness},</if>
+            <if test="suggestions != null">suggestions = #{suggestions},</if>
+        </trim>
+        where borrow_id = #{borrowId}
+    </update>
+
+    <delete id="deleteBorrowRatingsByBorrowId" parameterType="Long">
+        delete from borrow_ratings where borrow_id = #{borrowId}
+    </delete>
+
+    <delete id="deleteBorrowRatingsByBorrowIds" parameterType="String">
+        delete from borrow_ratings where borrow_id in 
+        <foreach item="borrowId" collection="array" open="(" separator="," close=")">
+            #{borrowId}
+        </foreach>
+    </delete>
+</mapper>

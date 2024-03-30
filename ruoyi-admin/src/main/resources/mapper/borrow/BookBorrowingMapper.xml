@@ -130,4 +130,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </select>
 
 
+    <select id="selectBookBorrowingByPendingStatusWithNullReturnDate" parameterType="BookBorrowing" resultMap="BookBorrowingResult">
+        <include refid="selectBookBorrowingVo"/>
+        <where>
+            pending_status = #{pendingStatus}
+            AND return_date IS NULL
+        </where>
+    </select>
+
+
 </mapper>

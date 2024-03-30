@@ -218,7 +218,7 @@ public class BookBorrowingController extends BaseController
     /**
      * 获取图书借阅信息详细信息
      */
-    @PreAuthorize("@ss.hasPermi('borrow:BookBorrowing:query')")
+//    @PreAuthorize("@ss.hasPermi('borrow:BookBorrowing:query')")
     @GetMapping(value = "/{borrowId}")
     public AjaxResult getInfo(@PathVariable("borrowId") Long borrowId)
     {

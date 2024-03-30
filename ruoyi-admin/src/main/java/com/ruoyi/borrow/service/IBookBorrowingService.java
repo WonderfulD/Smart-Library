@@ -88,4 +88,14 @@ public interface IBookBorrowingService
      * @return 符合条件的会员数
      */
     Integer countDistinctReaderIdsByDate(Date date);
+
+
+    /**
+     * 查询已通过审核未还的书籍借阅列表
+     *
+     * @param bookBorrowing 包含查询条件的实体，包括节约审核情况
+     * @return 符合条件的图书借阅信息列表
+     */
+    List<BookBorrowing> selectBookBorrowingByPendingStatusWithNullReturnDate(BookBorrowing bookBorrowing);
+
 }

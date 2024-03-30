@@ -279,15 +279,12 @@ public class BooksController extends BaseController
         startPage();
         bookBorrowing.setReaderId(SecurityUtils.getUserId()); // 设置当前用户ID
         bookBorrowing.setPendingStatus(1L);
-        List<BookBorrowing> list = bookBorrowingService.selectBookBorrowingListByReaderId(bookBorrowing);
-        List<BookBorrowing> returnlist = new ArrayList<>();
+        List<BookBorrowing> list = bookBorrowingService.selectBookBorrowingByPendingStatusWithNullReturnDate(bookBorrowing);
         for (BookBorrowing borrowing : list) {
-             if (borrowing.getReturnDate() == null) {
-                 returnlist.add(borrowing);
-                 borrowing.setStatus((long) getBorrowingStatus(borrowing));
-             }
+            borrowing.setStatus((long) getBorrowingStatus(borrowing));
+
         }
-        return getDataTable(returnlist);
+        return getDataTable(list);
     }
 
 
@@ -419,11 +416,13 @@ public class BooksController extends BaseController
                 return AjaxResult.error("图书不存在");
             }
             // 检查图书是否已归还
-            if (book.getStatus() == 0) {
+            if (book.getStatus() == 1) {
                 return AjaxResult.error("图书已归还");
+            }else if (book.getStatus() == 2) {
+                return AjaxResult.error("当前无法归还此图书");
             }
             // 更新图书状态为已归还
-            book.setStatus(0L);
+            book.setStatus(1L);
             booksService.updateBooks(book);
             Long borrowId = request.getBorrowId();
             Date dueDate = request.getDueDate();
