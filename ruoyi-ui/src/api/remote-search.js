@@ -25,6 +25,15 @@ export function getCategoryDistributionByDeptId(query) {
   })
 }
 
+export function getCategoryDistributionByUserId(query) {
+  return request({
+    url: '/book/BookInfo/borrowedBooksCategoryDistribution',
+    method: 'get',
+    params: query
+  })
+}
+
+
 export function getRecentBooksCounts(query) {
   return request({
     url: '/book/BookInfo/listRecentBooks',

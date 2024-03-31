@@ -56,7 +56,16 @@
     <el-table v-loading="loading" :data="BookBorrowingList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center"/>
       <el-table-column label="借阅号" align="center" prop="borrowId"/>
-      <el-table-column label="书籍编号" align="center" prop="bookId"/>
+      <el-table-column label="图书编号" align="center" prop="bookId"/>
+      <el-table-column label="书名" align="center" prop="title"/>
+      <el-table-column  label="图书封面" align="center">
+        <template slot-scope="scope">
+          <el-popover placement="top-start" title="" trigger="hover">
+            <img :src="scope.row.coverUrl" alt="" style="width: 150px;height: 150px">
+            <img slot="reference" :src="scope.row.coverUrl" style="width: 50px;height: 50px">
+          </el-popover>
+        </template>
+      </el-table-column>
       <el-table-column label="借出日期" align="center" prop="borrowDate" width="180">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.borrowDate, '{y}-{m}-{d}') }}</span>
@@ -110,7 +119,7 @@
 
     <!-- 满意度调查对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="1000px" append-to-body>
-      <el-form ref="form" :model="form" label-width="300px">
+      <el-form ref="form" :model="form" label-width="300px" label-position="top">
         <!-- 第一题 -->
         <el-form-item label="您是从什么渠道了解到智慧图书馆的？">
           <el-radio-group v-model="form.discoveryChannel">
@@ -194,6 +203,7 @@ import {
   getBookBorrowing
 } from "@/api/borrow/BookBorrowing";
 import {
+  borrowExtension,
   getReturnListWithStatusByReaderId,
   returnBook
 } from "@/api/book/BookInfo";
@@ -367,7 +377,29 @@ export default {
 
     /** 申请延长归还日期按钮操作 */
     handleExtension(row) {
+      if (row.status === 3) {
+        this.$message.error('您已逾期，无法延长期限，请尽快归还书籍！');
+      }else {
+        const borrowInfo = {
+          borrowId: row.borrowId,
+          bookId: row.bookId,
+          dueDate: row.dueDate,
+        };
+        console.log(borrowInfo);
+        // 调用API函数，传入借阅信息
+        borrowExtension(borrowInfo).then(response => {
+          if (response.code === 200) {
+            // 延期成功
+            this.$message.success('您已成功申请延期归还！');
+            this.getList();
+          } else {
+            // 后端返回了错误状态，延期失败
+            this.$message.error('申请延期失败，请稍后再试');
+          }
+        }).catch(error => {
 
+        });
+      }
     },
 
     /** 联系图书馆按钮操作 */

@@ -61,6 +61,24 @@ export function listBookBorrowingByDept(query) {
   })
 }
 
+//根据当前登录借阅人的id查询图书借阅信息列表
+export function listBookBorrowingByUser(query) {
+  return request({
+    url: '/borrow/BookBorrowing/listByUser',
+    method: 'get',
+    params: query
+  })
+}
+
+//根据当前登录借阅人的id查询借阅过的图书列表
+export function listByUserDistinctBooks(query) {
+  return request({
+    url: '/borrow/BookBorrowing/listByUserDistinctBooks',
+    method: 'get',
+    params: query
+  })
+}
+
 
 //根据读者Id查询图书借阅信息列表，并添加借阅状态
 export function listWithStatusByReaderId(query) {

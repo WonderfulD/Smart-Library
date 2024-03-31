@@ -30,7 +30,7 @@ echarts.use(
 
 require('echarts/theme/macarons') // echarts theme
 import resize from './mixins/resize'
-import {getCategoryDistributionByDeptId} from "@/api/remote-search";
+import {getCategoryDistributionByDeptId, getCategoryDistributionByUserId} from "@/api/remote-search";
 
 export default {
   mixins: [resize],
@@ -45,7 +45,7 @@ export default {
     },
     height: {
       type: String,
-      default: '300px'
+      default: '320px'
     }
   },
   data() {
@@ -67,7 +67,7 @@ export default {
   },
   methods: {
     fetchDataAndInitChart() {
-      getCategoryDistributionByDeptId().then(response => {
+      getCategoryDistributionByUserId().then(response => {
         if (response.code === 200) {
           this.initChart(response.data);
         } else {
@@ -100,7 +100,7 @@ export default {
         },
         series: [
           {
-            name: '藏书类别',
+            name: '借阅藏书类别',
             type: 'pie',
             roseType: 'radius',
             radius: [15, 95],

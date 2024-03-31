@@ -82,6 +82,14 @@
     <el-table v-loading="loading" :data="BookInfoList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="图书编号" align="center" prop="bookId" />
+      <el-table-column  label="图书封面" align="center">
+        <template slot-scope="scope">
+          <el-popover placement="top-start" title="" trigger="hover">
+            <img :src="scope.row.coverUrl" alt="" style="width: 150px;height: 150px">
+            <img slot="reference" :src="scope.row.coverUrl" style="width: 50px;height: 50px">
+          </el-popover>
+        </template>
+      </el-table-column>
       <el-table-column label="书名" align="center" prop="title" />
       <el-table-column label="作者" align="center" prop="author" />
       <el-table-column label="国际标准书号" align="center" prop="isbn" />
@@ -89,11 +97,6 @@
       <el-table-column label="图书分类" align="center" prop="category" />
       <el-table-column label="图书描述" align="center" prop="description" />
       <el-table-column label="版次" align="center" prop="edition" />
-      <el-table-column label="借阅状态" align="center" prop="status">
-        <template slot-scope="scope">
-          <dict-tag :options="dict.type.borrow_status" :value="scope.row.status"/>
-        </template>
-      </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -215,7 +218,7 @@ export default {
         isbn: null,
         publisher: null,
         category: null,
-        status: null
+        status: null,
       },
       // 表单参数
       form: {},
@@ -240,6 +243,7 @@ export default {
     /** 查询所有图书馆图书副本信息列表 */
     getList() {
       this.loading = true;
+      this.queryParams.Status = 1; //过滤不可用的书籍
       listBookInfo(this.queryParams).then(response => {
         this.BookInfoList = response.rows;
         this.total = response.total;
@@ -310,15 +314,11 @@ export default {
       const readerId = this.$store.state.user.id;
       const libraryId = row.libraryId;
       const today = new Date();
-      // const dueDate = new Date(today);
-      // dueDate.setDate(dueDate.getDate() + 30);// 假设借阅期限是30天
-
       const borrowInfo = {
         bookId: row.bookId,
         readerId: readerId,
         libraryId: libraryId,
         borrowDate: today.toISOString().split('T')[0], // 格式化日期为YYYY-MM-DD
-        // dueDate: dueDate.toISOString().split('T')[0], // 格式化日期为YYYY-MM-DD
       };
 
       console.log(borrowInfo);

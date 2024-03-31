@@ -42,7 +42,29 @@ public class BookRatings extends BaseEntity
     @Excel(name = "评分时间", width = 30, dateFormat = "yyyy-MM-dd")
     private Date ratingTime;
 
-    public void setRatingId(Long ratingId) 
+    /** 书本封面 */
+    private String coverUrl;
+
+    /** 书名 */
+    private String title;
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getCoverUrl() {
+        return coverUrl;
+    }
+
+    public void setCoverUrl(String coverUrl) {
+        this.coverUrl = coverUrl;
+    }
+
+    public void setRatingId(Long ratingId)
     {
         this.ratingId = ratingId;
     }

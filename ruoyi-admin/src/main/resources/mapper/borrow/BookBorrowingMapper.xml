@@ -16,10 +16,58 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="comments"    column="comments"    />
         <result property="status"    column="status"    />
         <result property="pendingStatus"    column="pending_status"    />
+        <result property="coverUrl" column="cover_url"/>
+        <result property="deptName" column="dept_name"/>
     </resultMap>
 
     <sql id="selectBookBorrowingVo">
         select borrow_id, book_id, reader_id, library_id, borrow_date, due_date, return_date, fine, comments, status, pending_status from BookBorrowing
+    </sql>
+
+
+    <sql id="selectBookBorrowingJoinBooksVo">
+        SELECT
+            bb.borrow_id,
+            bb.book_id,
+            bb.reader_id,
+            bb.library_id,
+            bb.borrow_date,
+            bb.due_date,
+            bb.return_date,
+            bb.fine,
+            bb.comments,
+            bb.status,
+            bb.pending_status,
+            b.cover_url,
+            b.title
+        FROM
+            BookBorrowing bb
+                LEFT JOIN
+            Books b
+            ON
+                bb.book_id = b.book_id
+    </sql>
+
+    <sql id="selectBookBorrowingJoinBooksJoinsys_deptVo">
+        SELECT
+            bb.borrow_id,
+            bb.book_id,
+            bb.reader_id,
+            bb.library_id,
+            bb.borrow_date,
+            bb.due_date,
+            bb.return_date,
+            bb.fine,
+            bb.comments,
+            bb.status,
+            bb.pending_status,
+            b.cover_url,
+            b.title,
+            sd.dept_name
+        FROM
+            BookBorrowing bb
+                LEFT JOIN Books b ON bb.book_id = b.book_id
+                LEFT JOIN sys_dept sd ON bb.library_id = sd.dept_id
     </sql>
 
     <select id="selectBookBorrowingList" parameterType="BookBorrowing" resultMap="BookBorrowingResult">
@@ -96,25 +144,25 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </delete>
 
     <select id="selectBookBorrowingListByDept" parameterType="BookBorrowing" resultMap="BookBorrowingResult">
-        <include refid="selectBookBorrowingVo"/>
+        <include refid="selectBookBorrowingJoinBooksVo"/>
         <where>
-            <if test="libraryId != null"> AND library_id = #{libraryId}</if>
-            <if test="borrowId != null "> AND borrow_id = #{borrowId}</if>
-            <if test="bookId != null "> AND book_id = #{bookId}</if>
-            <if test="readerId != null "> AND reader_id = #{readerId}</if>
-            <if test="borrowDate != null "> AND borrow_date = #{borrowDate}</if>
-            <if test="dueDate != null "> AND due_date = #{dueDate}</if>
-            <if test="status != null "> and status = #{status}</if>
-            <if test="pendingStatus != null "> and pending_status = #{pendingStatus}</if>
+            <if test="libraryId != null"> AND bb.library_id = #{libraryId}</if>
+            <if test="borrowId != null"> AND bb.borrow_id = #{borrowId}</if>
+            <if test="bookId != null"> AND bb.book_id = #{bookId}</if>
+            <if test="readerId != null"> AND bb.reader_id = #{readerId}</if>
+            <if test="borrowDate != null"> AND bb.borrow_date = #{borrowDate}</if>
+            <if test="dueDate != null"> AND bb.due_date = #{dueDate}</if>
+            <if test="status != null"> AND bb.status = #{status}</if>
+            <if test="pendingStatus != null"> AND bb.pending_status = #{pendingStatus}</if>
         </where>
     </select>
 
     <select id="selectBookBorrowingListByReaderId" parameterType="BookBorrowing" resultMap="BookBorrowingResult">
-        <include refid="selectBookBorrowingVo"/>
+        <include refid="selectBookBorrowingJoinBooksJoinsys_deptVo"/>
         <where>
             <if test="libraryId != null"> AND library_id = #{libraryId}</if>
             <if test="borrowId != null "> AND borrow_id = #{borrowId}</if>
-            <if test="bookId != null "> AND book_id = #{bookId}</if>
+            <if test="bookId != null "> AND bb.book_id = #{bookId}</if>
             <if test="readerId != null "> AND reader_id = #{readerId}</if>
             <if test="borrowDate != null "> AND borrow_date = #{borrowDate}</if>
             <if test="dueDate != null "> AND due_date = #{dueDate}</if>
@@ -131,7 +179,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
 
     <select id="selectBookBorrowingByPendingStatusWithNullReturnDate" parameterType="BookBorrowing" resultMap="BookBorrowingResult">
-        <include refid="selectBookBorrowingVo"/>
+        <include refid="selectBookBorrowingJoinBooksVo"/>
         <where>
             pending_status = #{pendingStatus}
             AND return_date IS NULL

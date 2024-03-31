@@ -58,6 +58,15 @@
       <el-table-column type="selection" width="55" align="center"/>
       <el-table-column label="借阅号" align="center" prop="borrowId"/>
       <el-table-column label="书籍编号" align="center" prop="bookId"/>
+      <el-table-column  label="书籍封面" align="center">
+        <template slot-scope="scope">
+          <el-popover placement="top-start" title="" trigger="hover">
+            <img :src="scope.row.coverUrl" alt="" style="width: 150px;height: 150px">
+            <img slot="reference" :src="scope.row.coverUrl" style="width: 50px;height: 50px">
+          </el-popover>
+        </template>
+      </el-table-column>
+      <el-table-column label="书名" align="center" prop="title"/>
       <el-table-column label="读者号" align="center" prop="readerId"/>
       <el-table-column label="申请日期" align="center" prop="borrowDate" width="180">
         <template slot-scope="scope">

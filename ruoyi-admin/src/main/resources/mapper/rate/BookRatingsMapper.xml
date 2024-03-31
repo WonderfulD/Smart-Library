@@ -1,39 +1,55 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ruoyi.rate.mapper.BookRatingsMapper">
-    
+
     <resultMap type="BookRatings" id="BookRatingsResult">
-        <result property="ratingId"    column="rating_id"    />
-        <result property="bookId"    column="book_id"    />
-        <result property="readerId"    column="reader_id"    />
-        <result property="rating"    column="rating"    />
-        <result property="comment"    column="comment"    />
-        <result property="ratingTime"    column="rating_time"    />
+        <result property="ratingId" column="rating_id"/>
+        <result property="bookId" column="book_id"/>
+        <result property="readerId" column="reader_id"/>
+        <result property="rating" column="rating"/>
+        <result property="comment" column="comment"/>
+        <result property="ratingTime" column="rating_time"/>
+        <result property="coverUrl" column="cover_url"/>
+        <result property="title" column="title"/>
     </resultMap>
 
     <sql id="selectBookRatingsVo">
-        select rating_id, book_id, reader_id, rating, comment, rating_time from book_ratings
+        select rating_id, book_id, reader_id, rating, comment, rating_time
+        from book_ratings
+    </sql>
+
+    <sql id="selectBookRatingsJoinBooksVo">
+        select br.rating_id,
+               br.book_id,
+               br.reader_id,
+               br.rating,
+               br.comment,
+               br.rating_time,
+               b.cover_url,
+               b.title
+        from book_ratings br
+                 join Books b on br.book_id = b.book_id
     </sql>
 
     <select id="selectBookRatingsList" parameterType="BookRatings" resultMap="BookRatingsResult">
-        <include refid="selectBookRatingsVo"/>
-        <where>  
-            <if test="ratingId != null "> and rating_id = #{ratingId}</if>
-            <if test="bookId != null "> and book_id = #{bookId}</if>
-            <if test="readerId != null "> and reader_id = #{readerId}</if>
-            <if test="rating != null "> and rating = #{rating}</if>
-            <if test="comment != null  and comment != ''"> and comment = #{comment}</if>
-            <if test="ratingTime != null "> and rating_time = #{ratingTime}</if>
+        <include refid="selectBookRatingsJoinBooksVo"/>
+        <where>
+            <if test="ratingId != null ">and rating_id = #{ratingId}</if>
+            <if test="bookId != null ">and br.book_id = #{bookId}</if>
+            <if test="readerId != null ">and reader_id = #{readerId}</if>
+            <if test="rating != null ">and rating = #{rating}</if>
+            <if test="comment != null  and comment != ''">and comment = #{comment}</if>
+            <if test="ratingTime != null ">and rating_time = #{ratingTime}</if>
         </where>
     </select>
-    
+
     <select id="selectBookRatingsByRatingId" parameterType="Long" resultMap="BookRatingsResult">
         <include refid="selectBookRatingsVo"/>
         where rating_id = #{ratingId}
     </select>
-        
+
     <insert id="insertBookRatings" parameterType="BookRatings" useGeneratedKeys="true" keyProperty="ratingId">
         insert into book_ratings
         <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -42,14 +58,14 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="rating != null">rating,</if>
             <if test="comment != null">comment,</if>
             <if test="ratingTime != null">rating_time,</if>
-         </trim>
+        </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="bookId != null">#{bookId},</if>
             <if test="readerId != null">#{readerId},</if>
             <if test="rating != null">#{rating},</if>
             <if test="comment != null">#{comment},</if>
             <if test="ratingTime != null">#{ratingTime},</if>
-         </trim>
+        </trim>
     </insert>
 
     <update id="updateBookRatings" parameterType="BookRatings">
@@ -65,11 +81,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </update>
 
     <delete id="deleteBookRatingsByRatingId" parameterType="Long">
-        delete from book_ratings where rating_id = #{ratingId}
+        delete
+        from book_ratings
+        where rating_id = #{ratingId}
     </delete>
 
     <delete id="deleteBookRatingsByRatingIds" parameterType="String">
-        delete from book_ratings where rating_id in 
+        delete from book_ratings where rating_id in
         <foreach item="ratingId" collection="array" open="(" separator="," close=")">
             #{ratingId}
         </foreach>

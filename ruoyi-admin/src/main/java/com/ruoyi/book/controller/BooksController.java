@@ -105,6 +105,36 @@ public class BooksController extends BaseController
         }
     }
 
+
+    /**
+     * 根据读者ID查询读者借阅图书类别分布
+     */
+    @GetMapping("/borrowedBooksCategoryDistribution")
+    public AjaxResult getCategoryDistributionByReaderId() {
+        try {
+            // 获取当前读者的所有借阅信息
+            BookBorrowing bookBorrowing = new BookBorrowing();
+            bookBorrowing.setReaderId(SecurityUtils.getUserId());
+            List<BookBorrowing> bookBorrowingList = bookBorrowingService.selectBookBorrowingListByReaderId(bookBorrowing);
+
+            // 统计每个类别的图书数量
+            Map<String, Integer> categoryCount = new HashMap<>();
+            for (BookBorrowing borrowing : bookBorrowingList) {
+                // 获取每本图书的详细信息
+                Books bookInfo = booksService.selectBooksByBookId(borrowing.getBookId());
+                String category = bookInfo.getCategory();
+
+                // 更新统计信息
+                categoryCount.put(category, categoryCount.getOrDefault(category, 0) + 1);
+            }
+            // 返回统计结果
+            return AjaxResult.success("获取成功", categoryCount);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return AjaxResult.error("获取图书类别统计信息失败");
+        }
+    }
+
     /**
      * 根据图书馆ID查询最近藏书量
      */
@@ -205,6 +235,7 @@ public class BooksController extends BaseController
         // 预计借阅量列表
         List<Integer> estimatedBorrowsCount = predictNextWeek(lastBorrowsCounts);
 
+        System.out.println(recentBorrowsCounts);
         System.out.println(lastBorrowsCounts);
         System.out.println(estimatedBorrowsCount);
 
@@ -456,6 +487,55 @@ public class BooksController extends BaseController
             // 如果有任何异常，Spring会回滚事务
             e.printStackTrace();
             return AjaxResult.error("归还失败，请稍后再试");
+        }
+    }
+
+
+    /**
+     * 处理借阅延期
+     * @return AjaxResult 响应结果
+     */
+    @Transactional
+    @PostMapping("/extension")
+    public AjaxResult handleExtension(@RequestBody BookBorrowing request) {
+        try {
+            Long bookId = request.getBookId();
+            // 先检查图书是否存在
+            Books book = booksService.selectBooksByBookId(bookId);
+            if (book == null) {
+                return AjaxResult.error("图书不存在");
+            }
+            // 检查图书是否已归还
+            if (book.getStatus() == 1) {
+                return AjaxResult.error("图书已归还");
+            }else if (book.getStatus() == 2) {
+                return AjaxResult.error("当前无法完成此操作");
+            }
+            Long borrowId = request.getBorrowId();
+            //检查是否已有延期
+            BookBorrowing borrowing = bookBorrowingService.selectBookBorrowingByBorrowId(borrowId);
+            if (borrowing.getComments().equals("延期15天成功")) {
+                return AjaxResult.error("不允许延期，你已经申请过延期！");
+            }
+            Date dueDate = request.getDueDate();
+            Calendar calendar = Calendar.getInstance(); // 获取一个Calendar实例
+            calendar.setTime(dueDate); // 设置calendar的时间为dueDate
+            calendar.add(Calendar.DAY_OF_MONTH, 15); // 在dueDate上增加15天
+
+            // 获取新的日期，即extensionDate
+            Date extensionDate = calendar.getTime();
+            // 创建并修改借阅记录
+            BookBorrowing bookBorrowing = new BookBorrowing();
+            bookBorrowing.setBookId(bookId);
+            bookBorrowing.setBorrowId(borrowId);
+            bookBorrowing.setDueDate(extensionDate);
+            bookBorrowing.setComments("延期15天成功");
+            bookBorrowingService.updateBookBorrowing(bookBorrowing);
+            return AjaxResult.success("延期成功");
+        } catch (Exception e) {
+            // 如果有任何异常，Spring会回滚事务
+            e.printStackTrace();
+            return AjaxResult.error("延期失败，请稍后再试");
         }
     }
 }

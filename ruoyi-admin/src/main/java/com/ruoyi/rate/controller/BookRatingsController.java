@@ -88,6 +88,8 @@ public class BookRatingsController extends BaseController
         return success(bookRatingsService.selectBookRatingsByRatingId(ratingId));
     }
 
+
+
     /**
      * 新增藏书评分
      */

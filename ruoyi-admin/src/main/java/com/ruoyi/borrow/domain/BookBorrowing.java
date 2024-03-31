@@ -26,12 +26,36 @@ public class BookBorrowing extends BaseEntity
     @Excel(name = "书籍ID")
     private Long bookId;
 
+    /** 书名 */
+    @Excel(name = "书名")
+    private String title;
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
     /** 读者ID */
     @Excel(name = "读者ID")
     private Long readerId;
 
     /** 图书馆ID */
+    @Excel(name = "图书馆ID")
     private Long libraryId;
+
+    /** 图书馆名称 */
+    private String deptName;
+
+    public String getDeptName() {
+        return deptName;
+    }
+
+    public void setDeptName(String deptName) {
+        this.deptName = deptName;
+    }
 
     /** 借出日期 */
     @JsonFormat(pattern = "yyyy-MM-dd")
@@ -64,6 +88,16 @@ public class BookBorrowing extends BaseEntity
     /** 审核状态 */
     @Excel(name = "审核状态")
     private Long pendingStatus;
+
+    private String coverUrl;
+
+    public String getCoverUrl() {
+        return coverUrl;
+    }
+
+    public void setCoverUrl(String coverUrl) {
+        this.coverUrl = coverUrl;
+    }
 
     public Long getStatus() {
         return status;

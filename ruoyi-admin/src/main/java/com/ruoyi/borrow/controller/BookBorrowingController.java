@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.ruoyi.prediction.Prediction.predictNextWeek;
 import static com.ruoyi.sort.BookBorrowingSorter.sortBookBorrowingsByBorrowDateDesc;
@@ -111,6 +112,36 @@ public class BookBorrowingController extends BaseController
         List<BookBorrowing> list = bookBorrowingService.selectBookBorrowingListByDept(bookBorrowing);
         return getDataTable(list);
     }
+
+    /**
+     * 根据当前登录借阅人ID，查询图书借阅信息列表
+     */
+//    @PreAuthorize("@ss.hasPermi('borrow:BookBorrowing:list')")
+    @GetMapping("/listByUser")
+    public TableDataInfo listByUser(BookBorrowing bookBorrowing) {
+        bookBorrowing.setReaderId(SecurityUtils.getUserId()); // 设置当前用户ID
+        List<BookBorrowing> list = bookBorrowingService.selectBookBorrowingListByReaderId(bookBorrowing);
+        return getDataTable(list);
+    }
+
+    /**
+     * 根据当前登录借阅人ID，查询借阅过的图书列表
+     */
+    @GetMapping("/listByUserDistinctBooks")
+    public TableDataInfo listByUserDistinctBooks(BookBorrowing bookBorrowing) {
+        bookBorrowing.setReaderId(SecurityUtils.getUserId()); // 设置当前用户ID
+        List<BookBorrowing> list = bookBorrowingService.selectBookBorrowingListByReaderId(bookBorrowing);
+
+        // 使用Stream API过滤重复的图书条目
+        List<BookBorrowing> distinctList = list.stream()
+                .collect(Collectors.collectingAndThen(
+                        Collectors.toCollection(() -> new TreeSet<>(Comparator.comparingLong(BookBorrowing::getBookId))),
+                        ArrayList::new));
+
+        return getDataTable(distinctList);
+    }
+
+
 
 
     /**

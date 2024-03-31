@@ -79,6 +79,15 @@ export function returnBook(data) {
   });
 }
 
+// 根据提供的借阅信息完成借阅延期
+export function borrowExtension(data) {
+  return request({
+    url: '/book/BookInfo/extension',
+    method: 'post',
+    data: data
+  });
+}
+
 //根据借阅人ID查询应还图书列表
 export function getReturnListWithStatusByReaderId(query) {
   return request({
