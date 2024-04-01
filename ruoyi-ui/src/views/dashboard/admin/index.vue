@@ -50,6 +50,7 @@ import TransactionTable from './components/TransactionTable'
 import TodoList from './components/TodoList'
 import BoxCard from './components/BoxCard'
 import {getRecentBooksCounts, getRecentBorrowsCounts, getRecentMembersCounts} from "@/api/remote-search";
+import {listRatingsByLibraryId, listRatingsListByLibraryId} from "@/api/borrowrating/BorrowRating";
 
 
 
@@ -66,7 +67,7 @@ const lineChartData = {
     expectedData: [80, 100, 121, 104, 105, 90, 100],
     actualData: [120, 90, 100, 138, 142, 130, 130]
   },
-  ratings: {
+  recentRatingsCounts: {
     expectedData: [96, 97, 99, 95, 97, 97, 97],
     actualData: [95, 100, 94, 96, 95, 97, 97]
   }
@@ -114,6 +115,13 @@ export default {
       })
     },
 
+    async fetchRecentRatingsCounts() {
+      listRatingsListByLibraryId().then(response => {
+        lineChartData.recentRatingsCounts.actualData = response.data.recentRatingsCounts;
+        lineChartData.recentRatingsCounts.expectedData = response.data.estimatedRatingsCounts;
+      })
+    },
+
     handleSetLineChartData(type) {
       this.lineChartData = lineChartData[type]
     }
@@ -122,7 +130,8 @@ export default {
     await Promise.all([
       this.fetchRecentBooksCounts(),
       this.fetchRecentBorrowsCounts(),
-      this.fetchRecentMembersCounts()
+      this.fetchRecentMembersCounts(),
+      this.fetchRecentRatingsCounts(),
     ]);
     this.isDataLoaded = true; // 更新数据加载状态
     console.log("改isDataLoaded了");

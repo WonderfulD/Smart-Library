@@ -96,4 +96,14 @@ public interface BookBorrowingMapper
      * @return 符合条件的图书借阅信息列表
      */
     List<BookBorrowing> selectBookBorrowingByPendingStatusWithNullReturnDate(BookBorrowing bookBorrowing);
+
+
+
+    /**
+     * 根据当前登录管理员所在图书馆ID，查询每天借阅图书所属种类列表
+     *
+     * @param bookBorrowing 包含查询条件的实体，包括图书馆Id
+     * @return 符合条件的图书借阅信息列表，包括图书种类
+     */
+    List<BookBorrowing> selectBookBorrowingListByLibraryIdWithCategory(BookBorrowing bookBorrowing);
 }

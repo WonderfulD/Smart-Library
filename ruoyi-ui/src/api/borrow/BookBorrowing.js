@@ -88,3 +88,13 @@ export function listWithStatusByReaderId(query) {
     params: query
   })
 }
+
+
+//查询每天借阅图书所属种类列表
+export function listCategoryCountsByDay(query) {
+  return request({
+    url: '/borrow/BookBorrowing/listCategoryCountsByDay',
+    method: 'get',
+    params: query
+  })
+}

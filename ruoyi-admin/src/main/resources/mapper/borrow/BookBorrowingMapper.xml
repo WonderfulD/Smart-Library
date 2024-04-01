@@ -18,6 +18,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="pendingStatus"    column="pending_status"    />
         <result property="coverUrl" column="cover_url"/>
         <result property="deptName" column="dept_name"/>
+        <result property="category" column="category"/>
     </resultMap>
 
     <sql id="selectBookBorrowingVo">
@@ -186,5 +187,34 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </where>
     </select>
 
+    <select id="selectBookBorrowingListByLibraryIdWithCategory" parameterType="BookBorrowing" resultMap="BookBorrowingResult">
+        SELECT
+        bb.borrow_id,
+        bb.book_id,
+        bb.reader_id,
+        bb.library_id,
+        bb.borrow_date,
+        bb.due_date,
+        bb.return_date,
+        bb.fine,
+        bb.comments,
+        bb.status,
+        bb.pending_status,
+        b.title,
+        b.category,
+        sd.dept_name
+        FROM
+        BookBorrowing bb
+        LEFT JOIN Books b ON bb.book_id = b.book_id
+        LEFT JOIN sys_dept sd ON bb.library_id = sd.dept_id
+        <where>
+            <if test="libraryId != null">
+                AND bb.library_id = #{libraryId}
+            </if>
+            <if test="borrowDate != null">
+                AND bb.borrow_date = #{borrowDate}
+            </if>
+        </where>
+    </select>
 
 </mapper>

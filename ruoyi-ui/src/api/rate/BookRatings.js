@@ -53,3 +53,22 @@ export function getBookAverageRating(query) {
     params: query
   })
 }
+
+
+// 获取藏书总评分列表
+export function getBookAverageRatingList(query) {
+  return request({
+    url: '/rate/BookRatings/averageRatingList',
+    method: 'get',
+    params: query
+  })
+}
+
+// 根据图书馆Id获取藏书总借阅量列表
+export function getEachBookBorrowsListByLibraryId(query) {
+  return request({
+    url: '/book/BookInfo/listBorrowsList',
+    method: 'get',
+    params: query
+  })
+}

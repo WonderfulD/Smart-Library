@@ -40,7 +40,7 @@
       </div>
     </el-col>
     <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-      <div class="card-panel" @click="handleSetLineChartData('ratings')">
+      <div class="card-panel" @click="handleSetLineChartData('recentRatingsCounts')">
         <div class="card-panel-icon-wrapper icon-star">
           <svg-icon icon-class="star" class-name="card-panel-icon" />
         </div>
@@ -48,7 +48,7 @@
           <div class="card-panel-text">
             会员满意度
           </div>
-          <count-to :start-val="0" :end-val="93" :duration="2600" class="card-panel-num" />
+          <count-to :start-val="0" :end-val="ratingsCount" :duration="2600" class="card-panel-num" />
         </div>
       </div>
     </el-col>
@@ -60,6 +60,8 @@ import CountTo from 'vue-count-to'
 import {listBookInfoByLibraryId} from "@/api/book/BookInfo";
 import {listBookBorrowingByDept} from "@/api/borrow/BookBorrowing";
 import {getTotalMembers} from "@/api/remote-search";
+import {listBorrowRating, listRatingsByLibraryId} from "@/api/borrowrating/BorrowRating";
+import {getInfo} from "@/api/login";
 
 export default {
   components: {
@@ -82,6 +84,9 @@ export default {
       getTotalMembers().then(response => {
         this.membersCount = response.data.MembersCounts;
       })
+      listRatingsByLibraryId().then(response => {
+        this.ratingsCount = response.data;
+      })
     }
   },
   data() {
@@ -89,6 +94,7 @@ export default {
       booksCount: 0,
       borrowsCount: 0,
       membersCount: 0,
+      ratingsCount: 0,
     }
   },
 }

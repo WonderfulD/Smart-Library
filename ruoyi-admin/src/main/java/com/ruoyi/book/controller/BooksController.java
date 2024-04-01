@@ -198,7 +198,6 @@ public class BooksController extends BaseController
         // 遍历最近七天
         for (int i = 1; i < 8; i++) {
             LocalDate specificDay = sevenDaysAgo.plusDays(i);
-            int finalI = i;
             // 计算截至到specificDay的借阅量
             long count = bookBorrowingList.stream()
                     .filter(borrowing -> {
@@ -208,7 +207,7 @@ public class BooksController extends BaseController
                         return !borrowDate.isAfter(specificDay);
                     })
                     .count();
-            recentBorrowsCounts.set(finalI - 1, (int) count);
+            recentBorrowsCounts.set(i - 1, (int) count);
         }
 
         // 初始化最近14天至最近7天的借阅列表
@@ -219,7 +218,6 @@ public class BooksController extends BaseController
         // 遍历最近14天至最近7天
         for (int i = 1; i < 8; i++) {
             LocalDate specificDay = fourteenDaysAgo.plusDays(i);
-            int finalI = i;
             // 计算截至到specificDay的借阅量
             long count = bookBorrowingList.stream()
                     .filter(borrowing -> {
@@ -229,7 +227,7 @@ public class BooksController extends BaseController
                         return !borrowDate.isAfter(specificDay);
                     })
                     .count();
-            lastBorrowsCounts.set(finalI - 1, (int) count);
+            lastBorrowsCounts.set(i - 1, (int) count);
         }
 
         // 预计借阅量列表
@@ -246,6 +244,41 @@ public class BooksController extends BaseController
 
         return AjaxResult.success(result);
     }
+
+    /**
+     * 根据图书馆ID查询图书借阅量列表
+     */
+    @GetMapping("/listBorrowsList")
+    public AjaxResult listBorrowsList() {
+        BookBorrowing bookBorrowing = new BookBorrowing();
+        bookBorrowing.setLibraryId(SecurityUtils.getDeptId());
+        List<BookBorrowing> bookBorrowingList = bookBorrowingService.selectBookBorrowingListByDept(bookBorrowing);
+
+        // 使用Map存储借阅次数
+        Map<Long, Integer> borrowCounts = new HashMap<>();
+        for (BookBorrowing borrowing : bookBorrowingList) {
+            borrowCounts.put(borrowing.getBookId(), borrowCounts.getOrDefault(borrowing.getBookId(), 0) + 1);
+        }
+
+        // 使用List存储最终结果，每个元素包含图书详细信息和借阅次数
+        List<Map<String, Object>> resultList = new ArrayList<>();
+        for (Map.Entry<Long, Integer> entry : borrowCounts.entrySet()) {
+            Long bookId = entry.getKey();
+            Books bookInfo = booksService.selectBooksByBookId(bookId);
+
+            // 创建一个包含图书详细信息和借阅次数的Map
+            Map<String, Object> bookDetails = new HashMap<>();
+            bookDetails.put("bookId", bookId);
+            bookDetails.put("title", bookInfo.getTitle());
+            bookDetails.put("coverUrl", bookInfo.getCoverUrl());
+            bookDetails.put("borrowCount", entry.getValue());
+
+            resultList.add(bookDetails);
+        }
+
+        return AjaxResult.success(resultList);
+    }
+
 
     /**
      * 预估未来七天的借阅量

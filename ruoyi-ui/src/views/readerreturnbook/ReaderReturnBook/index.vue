@@ -58,7 +58,7 @@
       <el-table-column label="借阅号" align="center" prop="borrowId"/>
       <el-table-column label="图书编号" align="center" prop="bookId"/>
       <el-table-column label="书名" align="center" prop="title"/>
-      <el-table-column  label="图书封面" align="center">
+      <el-table-column label="图书封面" align="center">
         <template slot-scope="scope">
           <el-popover placement="top-start" title="" trigger="hover">
             <img :src="scope.row.coverUrl" alt="" style="width: 150px;height: 150px">
@@ -145,42 +145,42 @@
         <!-- 第三题 -->
         <el-form-item label="您对本次借阅是否满意？">
           <el-radio-group v-model="form.borrowingSatisfaction">
-            <el-radio :label="0">非常满意</el-radio>
-            <el-radio :label="1">满意</el-radio>
-            <el-radio :label="2">一般</el-radio>
-            <el-radio :label="3">不满意</el-radio>
-            <el-radio :label="4">非常不满意</el-radio>
+            <el-radio :label="5">非常满意</el-radio>
+            <el-radio :label="4">满意</el-radio>
+            <el-radio :label="3">一般</el-radio>
+            <el-radio :label="2">不满意</el-radio>
+            <el-radio :label="1">非常不满意</el-radio>
           </el-radio-group>
         </el-form-item>
 
         <!-- 第四题 -->
         <el-form-item label="您对图书质量是否满意？">
           <el-radio-group v-model="form.bookQualitySatisfaction">
-            <el-radio :label="0">非常满意</el-radio>
-            <el-radio :label="1">满意</el-radio>
-            <el-radio :label="2">一般</el-radio>
-            <el-radio :label="3">不满意</el-radio>
-            <el-radio :label="4">非常不满意</el-radio>
+            <el-radio :label="5">非常满意</el-radio>
+            <el-radio :label="4">满意</el-radio>
+            <el-radio :label="3">一般</el-radio>
+            <el-radio :label="2">不满意</el-radio>
+            <el-radio :label="1">非常不满意</el-radio>
           </el-radio-group>
         </el-form-item>
 
         <!-- 第五题 -->
         <el-form-item label="您对本次提供图书的图书馆是否满意？">
           <el-radio-group v-model="form.librarySatisfaction">
-            <el-radio :label="0">非常满意</el-radio>
-            <el-radio :label="1">满意</el-radio>
-            <el-radio :label="2">一般</el-radio>
-            <el-radio :label="3">不满意</el-radio>
-            <el-radio :label="4">非常不满意</el-radio>
+            <el-radio :label="5">非常满意</el-radio>
+            <el-radio :label="4">满意</el-radio>
+            <el-radio :label="3">一般</el-radio>
+            <el-radio :label="2">不满意</el-radio>
+            <el-radio :label="1">非常不满意</el-radio>
           </el-radio-group>
         </el-form-item>
 
         <!-- 第六题 -->
         <el-form-item label="您是否愿意向其他人推荐智慧图书馆？">
           <el-radio-group v-model="form.recommendationWillingness">
-            <el-radio :label="0">非常愿意</el-radio>
+            <el-radio :label="2">非常愿意</el-radio>
             <el-radio :label="1">有合适的机会愿意推荐</el-radio>
-            <el-radio :label="2">不愿意</el-radio>
+            <el-radio :label="0">不愿意</el-radio>
           </el-radio-group>
         </el-form-item>
 
@@ -379,7 +379,7 @@ export default {
     handleExtension(row) {
       if (row.status === 3) {
         this.$message.error('您已逾期，无法延长期限，请尽快归还书籍！');
-      }else {
+      } else {
         const borrowInfo = {
           borrowId: row.borrowId,
           bookId: row.bookId,
@@ -406,20 +406,32 @@ export default {
     handleChat(row) {
     },
 
+    //获取当前日期函数
+    getNowFormatDate() {
+      let date = new Date(),
+        year = date.getFullYear(), //获取完整的年份(4位)
+        month = date.getMonth() + 1, //获取当前月份(0-11,0代表1月)
+        strDate = date.getDate() // 获取当前日(1-31)
+      if (month < 10) month = `0${month}` // 如果月份是个位数，在前面补0
+      if (strDate < 10) strDate = `0${strDate}` // 如果日是个位数，在前面补0
+
+      return `${year}-${month}-${strDate}`
+    },
 
     /** 提交按钮 */
     submitForm() {
       this.$refs["form"].validate(valid => {
         if (valid) {
+          const today = new Date();
           // 转换selectionReasons数组为逗号分隔的字符串
           const submissionData = {
             ...this.form,
             selectionReasons: this.form.selectionReasons.join(','),
+            ratingDate: today.toISOString().split('T')[0], // 格式化日期为YYYY-MM-DD
           };
-
+          console.log(submissionData);
           if (this.form.borrowId != null) {
             addBorrowRating(submissionData).then(response => {
-              console.log(submissionData);
               this.$modal.msgSuccess("感谢您的参与");
               this.open = false;
               this.getList();

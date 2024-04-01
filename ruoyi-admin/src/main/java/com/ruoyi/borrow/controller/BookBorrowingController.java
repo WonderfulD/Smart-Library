@@ -114,6 +114,34 @@ public class BookBorrowingController extends BaseController
     }
 
     /**
+     * 根据当前登录管理员所在图书馆ID，查询每天借阅图书所属种类列表
+     */
+    @GetMapping("/listCategoryCountsByDay")
+    public AjaxResult listCategoryCountsByDay() {
+        LocalDate today = LocalDate.now();
+        Map<String, Map<String, Integer>> categoryCountsByDay = new LinkedHashMap<>(); // 使用LinkedHashMap保持顺序
+
+        // 遍历近七天
+        for (int i = 6; i >= 0; i--) {
+            LocalDate targetDate = today.minusDays(i);
+            BookBorrowing bookBorrowing = new BookBorrowing();
+            bookBorrowing.setLibraryId(SecurityUtils.getDeptId());
+            bookBorrowing.setBorrowDate(Date.from(targetDate.atStartOfDay(ZoneId.systemDefault()).toInstant())); // 设置查询日期
+
+            List<BookBorrowing> dailyList = bookBorrowingService.selectBookBorrowingListByLibraryIdWithCategory(bookBorrowing);
+            Map<String, Integer> dailyCategoryCounts = dailyList.stream()
+                    .collect(Collectors.groupingBy(BookBorrowing::getCategory, Collectors.summingInt(e -> 1)));
+
+            categoryCountsByDay.put(targetDate.toString(), dailyCategoryCounts);
+        }
+
+        return AjaxResult.success(categoryCountsByDay);
+    }
+
+
+
+
+    /**
      * 根据当前登录借阅人ID，查询图书借阅信息列表
      */
 //    @PreAuthorize("@ss.hasPermi('borrow:BookBorrowing:list')")

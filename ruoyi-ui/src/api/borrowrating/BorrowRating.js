@@ -9,6 +9,34 @@ export function listBorrowRating(query) {
   })
 }
 
+// 根据图书馆Id查询读者对此图书馆评分
+export function listRatingsByLibraryId(query) {
+  return request({
+    url: '/borrowrating/BorrowRating/getRatings',
+    method: 'get',
+    params: query
+  })
+}
+
+// 根据图书馆Id查询读者对此图书馆评分列表
+export function listRatingsListByLibraryId(query) {
+  return request({
+    url: '/borrowrating/BorrowRating/listRecentRatings',
+    method: 'get',
+    params: query
+  })
+}
+
+// 根据图书馆Id查询词云数据
+export function listWordCloudDataByLibraryId(query) {
+  return request({
+    url: '/borrowrating/BorrowRating/getWordCloudByLibraryId',
+    method: 'get',
+    params: query
+  })
+}
+
+
 // 查询借阅评分详细
 export function getBorrowRating(borrowId) {
   return request({

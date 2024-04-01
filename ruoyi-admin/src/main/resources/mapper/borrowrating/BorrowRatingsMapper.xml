@@ -16,10 +16,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="librarySatisfaction"    column="library_satisfaction"    />
         <result property="recommendationWillingness"    column="recommendation_willingness"    />
         <result property="suggestions"    column="suggestions"    />
+        <result property="ratingDate"    column="rating_date"    />
     </resultMap>
 
     <sql id="selectBorrowRatingsVo">
-        select borrow_id, book_id, reader_id, library_id, discovery_channel, selection_reasons, borrowing_satisfaction, book_quality_satisfaction, library_satisfaction, recommendation_willingness, suggestions from borrow_ratings
+        select borrow_id, book_id, reader_id, library_id, discovery_channel, selection_reasons, borrowing_satisfaction, book_quality_satisfaction, library_satisfaction, recommendation_willingness, suggestions, rating_date from borrow_ratings
     </sql>
 
     <select id="selectBorrowRatingsList" parameterType="BorrowRatings" resultMap="BorrowRatingsResult">
@@ -36,6 +37,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="librarySatisfaction != null "> and library_satisfaction = #{librarySatisfaction}</if>
             <if test="recommendationWillingness != null "> and recommendation_willingness = #{recommendationWillingness}</if>
             <if test="suggestions != null  and suggestions != ''"> and suggestions = #{suggestions}</if>
+            <if test="ratingDate != null "> and rating_date = #{ratingDate}</if>
         </where>
     </select>
     
@@ -58,6 +60,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="librarySatisfaction != null">library_satisfaction,</if>
             <if test="recommendationWillingness != null">recommendation_willingness,</if>
             <if test="suggestions != null">suggestions,</if>
+            <if test="ratingDate != null">rating_date,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="borrowId != null">#{borrowId},</if>
@@ -71,6 +74,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="librarySatisfaction != null">#{librarySatisfaction},</if>
             <if test="recommendationWillingness != null">#{recommendationWillingness},</if>
             <if test="suggestions != null">#{suggestions},</if>
+            <if test="ratingDate != null">#{ratingDate},</if>
          </trim>
     </insert>
 
@@ -101,4 +105,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             #{borrowId}
         </foreach>
     </delete>
+
+    <select id="countLibraryRatingsByDate" parameterType="java.util.Date" resultType="int">
+        SELECT COUNT(DISTINCT reader_id)
+        FROM BookBorrowing
+        WHERE borrow_date &lt;= #{borrowDate}
+    </select>
 </mapper>

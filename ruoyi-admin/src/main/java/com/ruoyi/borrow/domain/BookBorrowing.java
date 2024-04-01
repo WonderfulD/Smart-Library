@@ -30,6 +30,18 @@ public class BookBorrowing extends BaseEntity
     @Excel(name = "书名")
     private String title;
 
+    /** 书的类别 */
+    @Excel(name = "类别")
+    private String category;
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
     public String getTitle() {
         return title;
     }
