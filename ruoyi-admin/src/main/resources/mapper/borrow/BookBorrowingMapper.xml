@@ -172,17 +172,19 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </select>
 
 
-    <select id="countDistinctReaderIdsByDate" parameterType="java.util.Date" resultType="int">
+    <select id="countDistinctReaderIdsByDate" parameterType="map" resultType="int">
         SELECT COUNT(DISTINCT reader_id)
         FROM BookBorrowing
         WHERE borrow_date &lt;= #{borrowDate}
+        AND library_id = #{libraryId}
     </select>
 
 
     <select id="selectBookBorrowingByPendingStatusWithNullReturnDate" parameterType="BookBorrowing" resultMap="BookBorrowingResult">
         <include refid="selectBookBorrowingJoinBooksVo"/>
         <where>
-            pending_status = #{pendingStatus}
+            <if test="pendingStatus != null"> AND pending_status = #{pendingStatus}</if>
+            <if test="readerId != null"> AND reader_id = #{readerId}</if>
             AND return_date IS NULL
         </where>
     </select>

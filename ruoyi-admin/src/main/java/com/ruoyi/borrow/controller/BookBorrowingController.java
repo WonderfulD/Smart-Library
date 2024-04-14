@@ -193,7 +193,7 @@ public class BookBorrowingController extends BaseController
     @GetMapping("/getTotalMembers")
     public AjaxResult getTotalMembers() throws Exception {
         LocalDate today = LocalDate.now();
-        Integer membersCounts = bookBorrowingService.countDistinctReaderIdsByDate(Date.from(today.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant()));
+        Integer membersCounts = bookBorrowingService.countDistinctReaderIdsByDate(Date.from(today.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant()), SecurityUtils.getDeptId());
         Map<String, Object> result = new HashMap<>();
         result.put("MembersCounts", membersCounts);
         return AjaxResult.success(result);
@@ -212,7 +212,7 @@ public class BookBorrowingController extends BaseController
         List<Integer> totalMembersCounts = new ArrayList<>();
 
         for (int i = 1; i < 15; i++) {
-            totalMembersCounts.add(bookBorrowingService.countDistinctReaderIdsByDate(Date.from(fourteenDaysAgo.plusDays(i).atStartOfDay().atZone(ZoneId.systemDefault()).toInstant())));
+            totalMembersCounts.add(bookBorrowingService.countDistinctReaderIdsByDate(Date.from(fourteenDaysAgo.plusDays(i).atStartOfDay().atZone(ZoneId.systemDefault()).toInstant()), SecurityUtils.getDeptId()));
         }
 
         System.out.println("totalMembersCounts:" + totalMembersCounts);

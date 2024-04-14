@@ -1,7 +1,7 @@
 <template>
   <div class="register">
     <el-form ref="registerForm" :model="registerForm" :rules="registerRules" class="register-form">
-      <h3 class="title">图书馆智慧后台管理系统</h3>
+      <h3 class="title">智慧图书馆</h3>
       <el-form-item prop="username">
         <el-input v-model="registerForm.username" type="text" auto-complete="off" placeholder="账号">
           <svg-icon slot="prefix" icon-class="user" class="el-input__icon input-icon" />
@@ -42,6 +42,20 @@
         <div class="register-code">
           <img :src="codeUrl" @click="getCode" class="register-code-img"/>
         </div>
+      </el-form-item>
+      <el-form-item prop="role">
+        <el-radio-group v-model="registerForm.role">
+          <el-radio label="reader">读者</el-radio>
+          <el-radio label="librarian">图书馆管理员</el-radio>
+        </el-radio-group>
+      </el-form-item>
+
+      <el-form-item prop="library" v-if="registerForm.role === 'librarian'">
+        <el-input
+          v-model="registerForm.library"
+          auto-complete="off"
+          placeholder="所属图书馆"
+        ></el-input>
       </el-form-item>
       <el-form-item style="width:100%;">
         <el-button
@@ -86,7 +100,9 @@ export default {
         password: "",
         confirmPassword: "",
         code: "",
-        uuid: ""
+        uuid: "",
+        role: "reader",  // 默认为读者
+        library: ""      // 所属图书馆
       },
       registerRules: {
         username: [
@@ -102,7 +118,13 @@ export default {
           { required: true, trigger: "blur", message: "请再次输入您的密码" },
           { required: true, validator: equalToPassword, trigger: "blur" }
         ],
-        code: [{ required: true, trigger: "change", message: "请输入验证码" }]
+        code: [{ required: true, trigger: "change", message: "请输入验证码" }],
+        role: [
+          { required: true, message: "请选择注册角色", trigger: "change" }
+        ],
+        library: [
+          { required: true, message: "请输入所属图书馆", trigger: "blur" }
+        ]
       },
       loading: false,
       captchaEnabled: true

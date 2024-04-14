@@ -1,7 +1,7 @@
 <template>
   <div class="login">
     <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form">
-      <h3 class="title">图书馆智慧管理系统</h3>
+      <h3 class="title">智慧图书馆</h3>
       <el-form-item prop="username">
         <el-input
           v-model="loginForm.username"
@@ -91,7 +91,7 @@ export default {
       // 验证码开关
       captchaEnabled: true,
       // 注册开关
-      register: false,
+      register: true,
       redirect: undefined
     };
   },

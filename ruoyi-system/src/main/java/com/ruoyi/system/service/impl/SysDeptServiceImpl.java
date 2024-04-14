@@ -127,6 +127,17 @@ public class SysDeptServiceImpl implements ISysDeptService
     }
 
     /**
+     * 根据部门名称查询部门ID
+     *
+     * @param deptName 部门名称
+     * @return 部门ID
+     */
+    @Override
+    public Long selectDeptIdByDeptName(String deptName) {
+        return deptMapper.selectDeptIdByDeptName(deptName);
+    }
+
+    /**
      * 根据ID查询所有子部门（正常状态）
      * 
      * @param deptId 部门ID

@@ -87,7 +87,7 @@ public interface IBookBorrowingService
      * @param date 借阅日期
      * @return 符合条件的会员数
      */
-    Integer countDistinctReaderIdsByDate(Date date);
+    Integer countDistinctReaderIdsByDate(Date date, Long libraryId);
 
 
     /**

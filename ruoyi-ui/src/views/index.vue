@@ -29,7 +29,7 @@
     </el-row>
     <el-row :gutter="20">
       <el-col :sm="24" :lg="12" style="padding-left: 20px">
-        <h2>图书馆智慧管理系统框架</h2>
+        <h2>智慧图书馆框架</h2>
         <p>
           项目简介占位
           <br>
@@ -158,7 +158,7 @@
             </el-collapse-item>
             <el-collapse-item title="v0.1.0 - 2024-03-11">
               <ol>
-                <li>图书馆智慧管理系统部署上线</li>
+                <li>智慧图书馆部署上线</li>
               </ol>
             </el-collapse-item>
           </el-collapse>

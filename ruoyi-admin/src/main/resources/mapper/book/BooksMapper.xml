@@ -62,7 +62,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="edition != null">edition,</if>
             <if test="status != null">status,</if>
             <if test="summary != null">summary,</if>
-            <if test="purchase_date != null">purchase_date,</if>
+            <if test="purchaseDate != null">purchase_date,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="libraryId != null">#{libraryId},</if>

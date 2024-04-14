@@ -126,8 +126,8 @@ public class BookBorrowingServiceImpl implements IBookBorrowingService
      * @return 符合条件的会员数
      */
     @Override
-    public Integer countDistinctReaderIdsByDate(Date date) {
-        return bookBorrowingMapper.countDistinctReaderIdsByDate(date);
+    public Integer countDistinctReaderIdsByDate(Date date, Long libraryId) {
+        return bookBorrowingMapper.countDistinctReaderIdsByDate(date, libraryId);
     }
 
 

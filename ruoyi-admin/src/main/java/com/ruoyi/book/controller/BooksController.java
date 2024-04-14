@@ -342,6 +342,7 @@ public class BooksController extends BaseController
     {
         startPage();
         bookBorrowing.setReaderId(SecurityUtils.getUserId()); // 设置当前用户ID
+        System.out.println(bookBorrowing.getReaderId());
         bookBorrowing.setPendingStatus(1L);
         List<BookBorrowing> list = bookBorrowingService.selectBookBorrowingByPendingStatusWithNullReturnDate(bookBorrowing);
         for (BookBorrowing borrowing : list) {
@@ -385,6 +386,7 @@ public class BooksController extends BaseController
     {
         Date today = new Date();
         books.setPurchaseDate(today);
+        books.setLibraryId(SecurityUtils.getDeptId());
         return toAjax(booksService.insertBooks(books));
     }
 

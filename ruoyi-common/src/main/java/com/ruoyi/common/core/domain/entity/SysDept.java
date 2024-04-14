@@ -73,6 +73,19 @@ public class SysDept extends BaseEntity
     @Excel(name = "图书馆联系信息")
     private String contactInfo;
 
+
+    /** 图书馆开馆时间 */
+    @Excel(name = "图书馆开馆时间")
+    private String openHour;
+
+    public String getOpenHour() {
+        return openHour;
+    }
+
+    public void setOpenHour(String openHour) {
+        this.openHour = openHour;
+    }
+
     /** 部门状态:0正常,1停用 */
     private String status;
 

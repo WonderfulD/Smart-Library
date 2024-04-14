@@ -45,15 +45,23 @@
       <el-table-column label="联系电话" align="center" prop="phone" />
       <el-table-column label="邮箱" align="center" prop="email" />
       <el-table-column label="图书馆地址" align="center" prop="address" />
-      <el-table-column label="图书馆联系信息" align="center" prop="contactInfo" />
+      <el-table-column label="开馆时间" align="center" prop="openHour" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
+            v-if="scope.row.deptName !== currentDeptName"
             size="mini"
             type="text"
             icon="el-icon-phone"
             @click="handleContact(scope.row)"
           >联系他们</el-button>
+          <el-button
+            v-else
+            size="mini"
+            type="text"
+            icon="el-icon-edit"
+            @click="handleUpdate(scope.row)"
+          >修改</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -68,18 +76,50 @@
 
     <!-- 添加或修改图书馆信息对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+      <el-form ref="form" :model="form" :rules="rules" label-width="80px" label-position="left">
+        <el-form-item label="负责人" prop="leader">
+          <el-input v-model="form.leader" placeholder="请输入负责人" />
+        </el-form-item>
+        <el-form-item label="联系电话" prop="phone">
+          <el-input v-model="form.phone" placeholder="请输入联系电话" />
+        </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model="form.email" placeholder="请输入邮箱" />
+        </el-form-item>
+        <el-form-item label="地址" prop="address">
+          <el-input v-model="form.address" placeholder="请输入内容" />
+        </el-form-item>
+        <el-form-item label="开馆时间" prop="openHour">
+          <el-input v-model="form.openHour" placeholder="请输入图书馆联系信息" />
+        </el-form-item>
+        <el-form-item label="联系信息" prop="contactInfo">
+          <el-input v-model="form.contactInfo" placeholder="请输入图书馆联系信息" />
+        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
+
+    <!-- 联系信息对话框 -->
+    <el-dialog
+      title="联系图书馆"
+      :visible.sync="contactInfoDialogVisible"
+      width="400px"
+      class="custom-dialog"
+    >
+      <div>{{ currentContactInfo }}</div>
+      <span slot="footer" class="dialog-footer">
+      <el-button @click="contactInfoDialogVisible = false">关闭</el-button>
+    </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import {listLibrary, listDept, getDept, delDept, addDept, updateDept } from "@/api/system/dept";
+import {listLibrary, getDept, delDept, addDept, updateDept } from "@/api/system/dept";
+import {getUser} from "@/api/system/user";
 
 export default {
   name: "Dept",
@@ -103,6 +143,11 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
+      //联系信息弹出层
+      contactInfoDialogVisible: false,
+      //联系信息
+      currentContactInfo: '',
+      currentDeptName: null, //当前登录用户所在图书馆名称
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -119,6 +164,7 @@ export default {
   },
   created() {
     this.getList();
+    this.getDeptName();
   },
   methods: {
     /** 查询图书馆信息列表 */
@@ -131,6 +177,14 @@ export default {
         this.total = response.data.length;
         this.loading = false;
       });
+    },
+
+    /** 查询当前登录用户所在图书馆名称 **/
+    getDeptName() {
+      getUser(this.$store.state.user.id).then( response => {
+        this.currentDeptName = response.data.dept.deptName;
+      })
+
     },
 
     // 取消按钮
@@ -156,7 +210,8 @@ export default {
         updateBy: null,
         updateTime: null,
         address: null,
-        contactInfo: null
+        contactInfo: null,
+        openHour: null
       };
       this.resetForm("form");
     },
@@ -194,8 +249,9 @@ export default {
     },
 
     /** 联系他们按钮操作 */
-    handleContact() {
-
+    handleContact(row) {
+      this.currentContactInfo = row.contactInfo; // 从点击行获取联系信息
+      this.contactInfoDialogVisible = true; // 显示对话框
     },
 
     /** 提交按钮 */
@@ -237,3 +293,32 @@ export default {
   }
 };
 </script>
+
+<style>
+.custom-dialog .el-dialog {
+  border-radius: 12px !important; /* 强制应用圆角到整个对话框 */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important; /* 添加阴影效果 */
+  overflow: hidden; /* 隐藏溢出的内容，确保内部元素不超出圆角边界 */
+}
+
+.custom-dialog .el-dialog__header,
+.custom-dialog .el-dialog__body,
+.custom-dialog .el-dialog__footer {
+  border-radius: 0 !important; /* 移除内部元素的圆角 */
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.custom-dialog .el-dialog__header {
+  background-color: #f5f5f5 !important; /* 应用头部背景色 */
+  color: #333 !important; /* 应用头部文字颜色 */
+}
+
+.custom-dialog .el-dialog__body {
+  padding: 20px !important; /* 应用主体内容的内边距 */
+  background-color: white !important; /* 应用主体背景色 */
+  color: #666 !important; /* 应用文字颜色 */
+}
+</style>
+
+

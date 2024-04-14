@@ -22,11 +22,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		<result property="updateTime"   column="update_time"    />
 		<result property="address" 	    column="address"        />
 		<result property="contactInfo"  column="contact_info"   />
+		<result property="openHour"  	column="open_hour"   />
 
 	</resultMap>
 
 	<sql id="selectDeptVo">
-        select d.dept_id, d.parent_id, d.ancestors, d.dept_name, d.order_num, d.leader, d.phone, d.email, d.status, d.del_flag, d.create_by, d.create_time, d.address, d.contact_info
+        select d.dept_id, d.parent_id, d.ancestors, d.dept_name, d.order_num, d.leader, d.phone, d.email, d.status, d.del_flag, d.create_by, d.create_time, d.address, d.contact_info, d.open_hour
         from sys_dept d
     </sql>
 
@@ -61,11 +62,18 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		order by d.parent_id, d.order_num
 	</select>
 
+
     <select id="selectDeptById" parameterType="Long" resultMap="SysDeptResult">
-		select d.dept_id, d.parent_id, d.ancestors, d.dept_name, d.order_num, d.leader, d.phone, d.email, d.status,
+		select d.dept_id, d.parent_id, d.ancestors, d.dept_name, d.order_num, d.leader, d.phone, d.email, d.status, d.address, d.contact_info, d.open_hour,
 			(select dept_name from sys_dept where dept_id = d.parent_id) parent_name
 		from sys_dept d
 		where d.dept_id = #{deptId}
+	</select>
+
+	<select id="selectDeptIdByDeptName" parameterType="String" resultType="Long">
+		select d.dept_id
+		from sys_dept d
+		where d.dept_name = #{deptName}
 	</select>
 
     <select id="checkDeptExistUser" parameterType="Long" resultType="int">
@@ -90,7 +98,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		where dept_name=#{deptName} and parent_id = #{parentId} and del_flag = '0' limit 1
 	</select>
 
-    <insert id="insertDept" parameterType="SysDept">
+    <insert id="insertDept" parameterType="SysDept" useGeneratedKeys="true" keyProperty="deptId">
  		insert into sys_dept(
  			<if test="deptId != null and deptId != 0">dept_id,</if>
  			<if test="parentId != null and parentId != 0">parent_id,</if>
@@ -129,7 +137,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
  			<if test="phone != null">phone = #{phone},</if>
  			<if test="email != null">email = #{email},</if>
  			<if test="status != null and status != ''">status = #{status},</if>
- 			<if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+			<if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+			<if test="address != null and address != ''">address = #{address},</if>
+ 			<if test="contactInfo != null and contactInfo != ''">contact_info = #{contactInfo},</if>
+			<if test="openHour != null and openHour != ''">open_hour = #{openHour},</if>
  			update_time = sysdate()
  		</set>
  		where dept_id = #{deptId}

@@ -1,7 +1,7 @@
 {
   "name": "ruoyi",
   "version": "3.8.7",
-  "description": "图书馆智慧管理系统",
+  "description": "智慧图书馆",
   "author": "图书馆智慧",
   "license": "MIT",
   "scripts": {

@@ -37,6 +37,14 @@ public interface SysDeptMapper
     public SysDept selectDeptById(Long deptId);
 
     /**
+     * 根据部门名称查询部门ID
+     *
+     * @param deptName 部门名称
+     * @return 部门ID
+     */
+    public Long selectDeptIdByDeptName(String deptName);
+
+    /**
      * 根据ID查询所有子部门
      * 
      * @param deptId 部门ID

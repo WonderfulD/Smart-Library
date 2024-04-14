@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.ruoyi.book.domain.Books;
 import com.ruoyi.borrow.domain.BookBorrowing;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 图书借阅信息Mapper接口
@@ -87,7 +88,7 @@ public interface BookBorrowingMapper
      * @param date 借阅日期
      * @return 符合条件的会员数
      */
-    Integer countDistinctReaderIdsByDate(Date date);
+    Integer countDistinctReaderIdsByDate(@Param("borrowDate") Date date, @Param("libraryId") Long libraryId);
 
     /**
      * 查询已通过审核未还的书籍借阅列表
