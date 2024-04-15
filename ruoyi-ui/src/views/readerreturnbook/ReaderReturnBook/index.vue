@@ -208,6 +208,44 @@
       <el-button @click="contactInfoDialogVisible = false">关闭</el-button>
     </span>
     </el-dialog>
+
+    <el-dialog
+      title="选择您的归还方式"
+      :visible.sync="returnMethodDialogVisible"
+      width="500px"
+    >
+      <el-form :model="returnMethodForm">
+        <el-form-item label="归还方式">
+          <el-radio-group v-model="returnMethodForm.returnMethod">
+            <el-radio :label="0">到馆</el-radio>
+            <el-radio :label="1">邮寄</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item v-if="returnMethodForm.returnMethod === 1" label="快递单号">
+          <el-input v-model="returnMethodForm.trackingNumber"></el-input>
+        </el-form-item>
+        <el-form-item v-if="returnMethodForm.returnMethod === 0" label="预约到馆时间">
+          <el-date-picker
+            clearable
+            v-model="returnMethodForm.returnDate"
+            type="date"
+            placeholder="选择日期"
+            value-format="yyyy-MM-dd"
+            :picker-options="{
+      disabledDate(time) {
+        return time.getTime() < Date.now();
+      }
+    }"
+          >
+          </el-date-picker>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+    <el-button @click="submitReturnMethod">提交</el-button>
+    <el-button @click="returnMethodDialogVisible = false">取消</el-button>
+  </span>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -217,8 +255,7 @@ import {
 } from "@/api/borrow/BookBorrowing";
 import {
   borrowExtension,
-  getReturnListWithStatusByReaderId,
-  returnBook
+  getReturnListWithStatusByReaderId, readerReturnBook
 } from "@/api/book/BookInfo";
 import {addBorrowRating} from "@/api/borrowrating/BorrowRating";
 import {getDept} from "@/api/system/dept";
@@ -250,6 +287,14 @@ export default {
       contactInfoDialogVisible: false,
       //联系信息
       currentContactInfo: '',
+      returnMethodDialogVisible: false, // 控制归还方式对话框的显示
+      returnMethodForm: {
+        borrowId: null,
+        bookId: null,
+        returnMethod: null, // 归还方式
+        trackingNumber: '', // 快递单号
+        returnDate: this.getNowFormatDate(), // 预约到馆时间，默认为今天
+      },
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -348,12 +393,8 @@ export default {
     handleForm(row) {
       this.reset();
       const borrowId = row.borrowId || this.ids
-      console.log("获取表单数据前的form：");
-      console.log(this.form);
       getBookBorrowing(borrowId).then(response => {
         this.form = response.data;
-        console.log("获取表单数据后的form：");
-        console.log(this.form);
         if (!this.form.selectionReasons || !Array.isArray(this.form.selectionReasons)) {
           this.$set(this.form, 'selectionReasons', []);
         }
@@ -364,33 +405,60 @@ export default {
 
     /** 归还按钮操作 */
     handleReturn(row) {
-      // 事务管理，设置图书状态为已归还+修改借阅记录的归还日期至借阅表必须支持原子性
-      const today = new Date();
-
-      const borrowInfo = {
-        bookId: row.bookId,
+      // 初始化默认表单状态
+      this.returnMethodForm = {
         borrowId: row.borrowId,
-        dueDate: row.dueDate,
-        returnDate: today.toISOString().split('T')[0], // 格式化日期为YYYY-MM-DD
+        bookId: row.bookId,
+        returnMethod: null,
+        trackingNumber: '',
+        returnDate: this.getNowFormatDate(),
       };
-
-      console.log(borrowInfo);
-      // 调用API函数，传入借阅信息
-      returnBook(borrowInfo).then(response => {
-        if (response.code === 200) {
-          // 归还成功
-          this.$message.success('归还成功');
-          this.handleForm(row);
-          this.getList();
-        } else {
-          // 后端返回了错误状态，归还失败
-          this.$message.error(response.message || '归还失败');
-        }
+      getBookBorrowing(row.borrowId).then(response => {
+        // 使用Vue.set确保所有属性都是响应式的
+        Object.keys(response.data).forEach(key => {
+          if (key === 'comments') {
+            // 特别处理 comments 字段，提取日期
+            const extractedDate = this.parseDateFromString(response.data[key]);
+            this.$set(this.returnMethodForm, 'returnDate', extractedDate);
+          } else {
+            this.$set(this.returnMethodForm, key, response.data[key]);
+          }
+        });
+        this.returnMethodDialogVisible = true;
       }).catch(error => {
-        // 请求发送失败或后端抛出异常
-        console.error('Return operation failed:', error);
-        this.$message.error('归还失败，请稍后再试');
+        console.error('Error fetching borrowing details:', error);
+        this.$message.error('无法加载借阅信息，请稍后再试');
       });
+    },
+
+    /** 解析日期字符串 */
+    parseDateFromString(str) {
+      const regex = /\d{4}-\d{2}-\d{2}/; // 匹配形如 yyyy-mm-dd 的日期格式
+      const matches = str.match(regex);
+      return matches ? matches[0] : null;
+    },
+
+
+    submitReturnMethod() {
+      if (this.returnMethodForm.returnDate === null) this.returnMethodForm.returnDate = this.getNowFormatDate();
+      getBookBorrowing(this.returnMethodForm.borrowId).then( response => {
+        var flag = true;
+        if (response.data.returnMethod !== null) flag = false;
+        readerReturnBook(this.returnMethodForm).then( response => {
+          if(response.code === 200) {
+            this.$message.success(response.msg);
+            if (flag) {
+              this.handleForm({
+                borrowId: this.returnMethodForm.borrowId,
+              });
+            }
+            this.getList();
+          }else {
+            this.$message.success(response.msg);
+          }
+        })
+      })
+      this.returnMethodDialogVisible = false;
     },
 
     /** 申请延长归还日期按钮操作 */

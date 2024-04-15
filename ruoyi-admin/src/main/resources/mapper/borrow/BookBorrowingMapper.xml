@@ -3,26 +3,29 @@
 PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ruoyi.borrow.mapper.BookBorrowingMapper">
-    
+
     <resultMap type="BookBorrowing" id="BookBorrowingResult">
-        <result property="borrowId"    column="borrow_id"    />
-        <result property="bookId"    column="book_id"    />
-        <result property="readerId"    column="reader_id"    />
-        <result property="libraryId"    column="library_id"    />
-        <result property="borrowDate"    column="borrow_date"    />
-        <result property="dueDate"    column="due_date"    />
-        <result property="returnDate"    column="return_date"    />
-        <result property="fine"    column="fine"    />
-        <result property="comments"    column="comments"    />
-        <result property="status"    column="status"    />
+        <result property="borrowId"         column="borrow_id"    />
+        <result property="bookId"           column="book_id"    />
+        <result property="readerId"         column="reader_id"    />
+        <result property="libraryId"        column="library_id"    />
+        <result property="borrowDate"       column="borrow_date"    />
+        <result property="dueDate"          column="due_date"    />
+        <result property="returnDate"       column="return_date"    />
+        <result property="fine"             column="fine"    />
+        <result property="comments"         column="comments"    />
+        <result property="status"           column="status"    />
         <result property="pendingStatus"    column="pending_status"    />
-        <result property="coverUrl" column="cover_url"/>
-        <result property="deptName" column="dept_name"/>
-        <result property="category" column="category"/>
+        <result property="coverUrl"         column="cover_url"/>
+        <result property="deptName"         column="dept_name"/>
+        <result property="category"         column="category"/>
+        <result property="returnMethod"     column="return_method"/>
+        <result property="trackingNumber"   column="tracking_number"/>
+        <result property="borrowMethod"     column="borrow_method"/>
     </resultMap>
 
     <sql id="selectBookBorrowingVo">
-        select borrow_id, book_id, reader_id, library_id, borrow_date, due_date, return_date, fine, comments, status, pending_status from BookBorrowing
+        select borrow_id, book_id, reader_id, library_id, borrow_date, due_date, return_date, fine, comments, status, pending_status, return_method, tracking_number, borrow_method from BookBorrowing
     </sql>
 
 
@@ -39,6 +42,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             bb.comments,
             bb.status,
             bb.pending_status,
+            bb.return_method,
+            bb.tracking_number,
+            bb.borrow_method,
             b.cover_url,
             b.title
         FROM
@@ -62,6 +68,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             bb.comments,
             bb.status,
             bb.pending_status,
+            bb.return_method,
+            bb.tracking_number,
+            bb.borrow_method,
             b.cover_url,
             b.title,
             sd.dept_name
@@ -80,6 +89,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="borrowDate != null "> and borrow_date = #{borrowDate}</if>
             <if test="dueDate != null "> and due_date = #{dueDate}</if>
             <if test="pendingStatus != null "> and pending_status = #{pendingStatus}</if>
+            <if test="returnMethod != null "> and return_method = #{returnMethod}</if>
+            <if test="trackingNumber != null "> and tracking_number = #{trackingNumber}</if>
+            <if test="borrowMethod != null "> and borrow_method = #{borrowMethod}</if>
         </where>
     </select>
     
@@ -101,6 +113,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="fine != null">fine,</if>
             <if test="comments != null">comments,</if>
             <if test="pendingStatus != null">pending_status,</if>
+            <if test="returnMethod != null">return_method,</if>
+            <if test="trackingNumber != null">tracking_number,</if>
+            <if test="borrowMethod != null">borrow_method,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="borrowId != null">#{borrowId},</if>
@@ -113,6 +128,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="fine != null">#{fine},</if>
             <if test="comments != null">#{comments},</if>
             <if test="pendingStatus != null">#{pendingStatus},</if>
+            <if test="returnMethod != null">#{returnMethod},</if>
+            <if test="trackingNumber != null">#{trackingNumber},</if>
+            <if test="borrowMethod != null">#{borrowMethod},</if>
          </trim>
     </insert>
 
@@ -129,6 +147,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="comments != null">comments = #{comments},</if>
             <if test="status != null">status = #{status},</if>
             <if test="pendingStatus != null">pending_status = #{pendingStatus},</if>
+            <if test="returnMethod != null">return_method = #{returnMethod},</if>
+            <if test="trackingNumber != null">tracking_number = #{trackingNumber},</if>
+            <if test="borrowMethod != null">borrow_method = #{borrowMethod},</if>
         </trim>
         where borrow_id = #{borrowId}
     </update>
@@ -155,6 +176,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="dueDate != null"> AND bb.due_date = #{dueDate}</if>
             <if test="status != null"> AND bb.status = #{status}</if>
             <if test="pendingStatus != null"> AND bb.pending_status = #{pendingStatus}</if>
+            <if test="returnMethod != null"> AND bb.return_method = #{returnMethod}</if>
+            <if test="trackingNumber != null"> AND bb.tracking_number = #{trackingNumber}</if>
+            <if test="borrowMethod != null"> AND bb.borrow_method = #{borrowMethod}</if>
         </where>
     </select>
 
@@ -168,6 +192,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="borrowDate != null "> AND borrow_date = #{borrowDate}</if>
             <if test="dueDate != null "> AND due_date = #{dueDate}</if>
             <if test="pendingStatus != null "> and pending_status = #{pendingStatus}</if>
+            <if test="returnMethod != null"> AND bb.return_method = #{returnMethod}</if>
+            <if test="trackingNumber != null"> AND bb.tracking_number = #{trackingNumber}</if>
+            <if test="borrowMethod != null"> AND bb.borrow_method = #{borrowMethod}</if>
         </where>
     </select>
 
@@ -202,6 +229,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         bb.comments,
         bb.status,
         bb.pending_status,
+        bb.return_method,
+        bb.tracking_number,
+        bb.borrow_method,
         b.title,
         b.category,
         sd.dept_name

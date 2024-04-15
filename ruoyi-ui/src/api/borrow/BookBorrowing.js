@@ -26,6 +26,14 @@ export function listPendingByDept(borrowId) {
   })
 }
 
+// 查询图书归还确认列表
+export function listReturnPendingByDept(borrowId) {
+  return request({
+    url: '/borrow/BookBorrowing/listReturnPendingByDept',
+    method: 'get'
+  })
+}
+
 // 新增图书借阅信息
 export function addBookBorrowing(data) {
   return request({

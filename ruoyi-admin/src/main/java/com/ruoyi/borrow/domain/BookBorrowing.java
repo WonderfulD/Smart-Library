@@ -101,6 +101,42 @@ public class BookBorrowing extends BaseEntity
     @Excel(name = "审核状态")
     private Long pendingStatus;
 
+    /** 运单号 */
+    @Excel(name = "运单号")
+    private String trackingNumber;
+
+    /** 归还方式 */
+    @Excel(name = "归还方式")
+    private Long returnMethod;
+
+    /** 取阅方式 */
+    @Excel(name = "取阅方式")
+    private Long borrowMethod;
+
+    public Long getBorrowMethod() {
+        return borrowMethod;
+    }
+
+    public void setBorrowMethod(Long borrowMethod) {
+        this.borrowMethod = borrowMethod;
+    }
+
+    public String getTrackingNumber() {
+        return trackingNumber;
+    }
+
+    public void setTrackingNumber(String trackingNumber) {
+        this.trackingNumber = trackingNumber;
+    }
+
+    public Long getReturnMethod() {
+        return returnMethod;
+    }
+
+    public void setReturnMethod(Long returnMethod) {
+        this.returnMethod = returnMethod;
+    }
+
     private String coverUrl;
 
     public String getCoverUrl() {

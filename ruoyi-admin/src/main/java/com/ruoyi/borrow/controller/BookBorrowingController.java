@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 import static com.ruoyi.prediction.Prediction.predictNextWeek;
@@ -80,8 +81,11 @@ public class BookBorrowingController extends BaseController
      * 获取借阅状态
      */
     public static int getBorrowingStatus(BookBorrowing borrowing) {
+        if(borrowing.getReturnMethod() != null && borrowing.getReturnDate() == null) {
+            return 6;
+        }
         if (borrowing.getPendingStatus() == 0L) {
-          return 5;       //
+          return 5;       //借阅拒绝
         } else if (borrowing.getDueDate() == null) {
             return 4;     //待审核
         } else if (borrowing.getReturnDate() != null) {
@@ -182,6 +186,31 @@ public class BookBorrowingController extends BaseController
         bookBorrowing.setLibraryId(SecurityUtils.getDeptId()); // 设置当前用户所在部门ID
         bookBorrowing.setPendingStatus(2L);
         List<BookBorrowing> list = bookBorrowingService.selectBookBorrowingListByDept(bookBorrowing);
+        return getDataTable(list);
+    }
+
+    /**
+     * 根据当前登录管理员所在图书馆ID，查询图书归还待确认列表
+     */
+//    @PreAuthorize("@ss.hasPermi('borrow:BookBorrowing:list')")
+    @GetMapping("/listReturnPendingByDept")
+    public TableDataInfo listReturnPendingByDept(BookBorrowing bookBorrowing) {
+        startPage();
+        bookBorrowing.setLibraryId(SecurityUtils.getDeptId()); // 设置当前用户所在部门ID
+        bookBorrowing.setReturnMethod(0L);
+        List<BookBorrowing> list = new CopyOnWriteArrayList<>();
+        List<BookBorrowing> list1 = bookBorrowingService.selectBookBorrowingListByDept(bookBorrowing);
+        bookBorrowing.setReturnMethod(1L);
+        List<BookBorrowing> list2 = bookBorrowingService.selectBookBorrowingListByDept(bookBorrowing);
+        list.addAll(list1);
+        list.addAll(list2);
+        for (BookBorrowing borrowing : list) {
+            if (borrowing.getReturnDate() != null) {
+                list.remove(borrowing);
+                continue;
+            }
+            borrowing.setStatus((long) getBorrowingStatus(borrowing));
+        }
         return getDataTable(list);
     }
 

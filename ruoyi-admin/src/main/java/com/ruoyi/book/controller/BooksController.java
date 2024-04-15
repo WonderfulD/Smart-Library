@@ -1,5 +1,7 @@
 package com.ruoyi.book.controller;
 
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 
@@ -430,7 +432,6 @@ public class BooksController extends BaseController
             if (book.getStatus() == 0 || book.getStatus() == 2 ) {
                 return AjaxResult.error("图书已被借出");
             }
-
             Long readerId = request.getReaderId();
             Long libraryId = request.getLibraryId();
             Date borrowDate = request.getBorrowDate();
@@ -440,19 +441,26 @@ public class BooksController extends BaseController
             bookBorrowing.setReaderId(readerId);
             bookBorrowing.setLibraryId(libraryId);
             bookBorrowing.setBorrowDate(borrowDate);
-
+            Long borrowMethod = request.getBorrowMethod();
+            bookBorrowing.setBorrowMethod(borrowMethod);
             //设置borrowId为日期+随机数
             long timestamp = new Date().getTime();
             long randomNumber = ThreadLocalRandom.current().nextLong(1, 1000);
             long borrowId = (timestamp % 100000000L) * 1000 + randomNumber; // 确保borrowId适合Long存储
             bookBorrowing.setBorrowId(borrowId); // 设置生成的借阅编号
-
             //设置借阅状态待审核
             bookBorrowing.setPendingStatus(2L);
-
             //设置借阅备注
-            bookBorrowing.setComments("");
-
+            String comments = null;
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd"); // 创建日期格式化对象
+            String formattedDate = sdf.format(borrowDate); // 格式化日期
+            if (borrowMethod == 0L) {  //到馆
+                comments = "到馆取阅, 取阅时间为: " + formattedDate;
+            } else if (borrowMethod == 1L) {
+                comments = "邮寄取阅, 邮寄地址为: " + request.getComments();
+                
+            }
+            bookBorrowing.setComments(comments);
             bookBorrowingService.insertBookBorrowing(bookBorrowing);
             // 更新图书状态为待审核
             book.setStatus(2L);
@@ -468,7 +476,7 @@ public class BooksController extends BaseController
 
 
     /**
-     * 处理图书归还
+     * 处理管理员确认图书归还
      * @return AjaxResult 响应结果
      */
     @Transactional
@@ -483,16 +491,16 @@ public class BooksController extends BaseController
             }
             // 检查图书是否已归还
             if (book.getStatus() == 1) {
-                return AjaxResult.error("图书已归还");
+                return AjaxResult.error("图书已被归还");
             }else if (book.getStatus() == 2) {
-                return AjaxResult.error("当前无法归还此图书");
+                return AjaxResult.error("当前无法确认此图书");
             }
             // 更新图书状态为已归还
             book.setStatus(1L);
             booksService.updateBooks(book);
             Long borrowId = request.getBorrowId();
             Date dueDate = request.getDueDate();
-            Date returnDate = request.getReturnDate();
+            Date returnDate = new Date();
             String comment = "";
             Long fine = 0L;
             if (returnDate.before(dueDate)) { //按时归还
@@ -505,7 +513,7 @@ public class BooksController extends BaseController
                 if (overdueDays <= 100) { //封顶100天
                     fine = Math.min(overdueDays * 3, 30L) * 10; //每天0.3元,封顶30元
                 } else {
-                    fine = 300L; //超过100天,直接上限300元
+                    fine = 30L; //超过100天,上限30元
                 }
             }
             // 创建并修改借阅记录
@@ -514,16 +522,66 @@ public class BooksController extends BaseController
             bookBorrowing.setBorrowId(borrowId);
             bookBorrowing.setReturnDate(returnDate);
             bookBorrowing.setComments(comment);
-            System.out.println("\n" + bookBorrowing);
+            bookBorrowing.setFine(BigDecimal.valueOf(fine));
             bookBorrowingService.updateBookBorrowing(bookBorrowing);
 
-            return AjaxResult.success("归还成功");
+            return AjaxResult.success("图书已确认归还");
+        } catch (Exception e) {
+            // 如果有任何异常，Spring会回滚事务
+            e.printStackTrace();
+            return AjaxResult.error("确认归还失败，请稍后再试");
+        }
+    }
+
+    /**
+     * 处理读者图书归还
+     * @return AjaxResult 响应结果
+     */
+    @Transactional
+    @PostMapping("/readerReturn")
+    public AjaxResult handleReaderReturn(@RequestBody BookBorrowing request) {
+        try {
+            Long bookId = request.getBookId();
+            // 先检查图书是否存在
+            Books book = booksService.selectBooksByBookId(bookId);
+            if (book == null) {
+                return AjaxResult.error("图书不存在");
+            }
+            // 检查图书是否已归还
+            if (book.getStatus() == 1) {
+                return AjaxResult.error("图书已归还");
+            } else if (book.getStatus() == 2) {
+                return AjaxResult.error("当前无法归还此图书");
+            }
+            // 创建并修改借阅记录
+            BookBorrowing bookBorrowing = new BookBorrowing();
+            Long borrowId = request.getBorrowId();
+            Date returnDate = request.getReturnDate();
+            Long returnMethod = request.getReturnMethod();
+            String comment;
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd"); // 创建日期格式化对象
+            String formattedDate = sdf.format(returnDate); // 格式化日期
+
+            if (returnMethod == 1L) { // 邮寄归还
+                String trackingNumber = request.getTrackingNumber();
+                comment = "邮寄归还, 寄出时间为: " + formattedDate;
+                bookBorrowing.setTrackingNumber(trackingNumber);
+            } else { // 到馆归还
+                comment = "到馆归还, 预约时间为: " + formattedDate;
+            }
+            bookBorrowing.setBookId(bookId);
+            bookBorrowing.setBorrowId(borrowId);
+            bookBorrowing.setComments(comment);
+            bookBorrowing.setReturnMethod(returnMethod);
+            bookBorrowingService.updateBookBorrowing(bookBorrowing);
+            return AjaxResult.success("已提交，您的预计归还日期为:" + formattedDate);
         } catch (Exception e) {
             // 如果有任何异常，Spring会回滚事务
             e.printStackTrace();
             return AjaxResult.error("归还失败，请稍后再试");
         }
     }
+
 
 
     /**

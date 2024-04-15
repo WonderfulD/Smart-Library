@@ -131,6 +131,19 @@
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
+
+    <!-- 联系信息对话框 -->
+    <el-dialog
+      title="联系图书馆"
+      :visible.sync="contactInfoDialogVisible"
+      width="400px"
+      class="custom-dialog"
+    >
+      <div>{{ currentContactInfo }}</div>
+      <span slot="footer" class="dialog-footer">
+      <el-button @click="contactInfoDialogVisible = false">关闭</el-button>
+    </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -141,7 +154,7 @@ import {
   addBookBorrowing,
   updateBookBorrowing, listWithStatusByReaderId
 } from "@/api/borrow/BookBorrowing";
-import {returnBook} from "@/api/book/BookInfo";
+import {getDept} from "@/api/system/dept";
 
 export default {
   name: "BookBorrowing",
@@ -166,6 +179,10 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
+      //联系信息弹出层
+      contactInfoDialogVisible: false,
+      //联系信息
+      currentContactInfo: '',
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -256,43 +273,13 @@ export default {
       this.title = "添加图书借阅信息";
     },
 
-    /** 归还按钮操作 */
-    handleReturn(row) {
-      // 事务管理，设置图书状态为已归还+修改借阅记录的归还日期至借阅表必须支持原子性
-      const today = new Date();
-
-      const borrowInfo = {
-        bookId: row.bookId,
-        borrowId: row.borrowId,
-        dueDate: row.dueDate,
-        returnDate: today.toISOString().split('T')[0], // 格式化日期为YYYY-MM-DD
-      };
-
-      console.log(borrowInfo);
-      // 调用API函数，传入借阅信息
-      returnBook(borrowInfo).then(response => {
-        if (response.code === 200) {
-          // 归还成功
-          this.$message.success('归还成功');
-          this.getList();
-        } else {
-          // 后端返回了错误状态，归还失败
-          this.$message.error(response.message || '归还失败');
-        }
-      }).catch(error => {
-        // 请求发送失败或后端抛出异常
-        console.error('Return operation failed:', error);
-        this.$message.error('归还失败，请稍后再试');
-      });
-    },
-
-    /** 申请延长归还日期按钮操作 */
-    handleExtension(row) {
-
-    },
 
     /** 联系图书馆按钮操作 */
     handleChat(row) {
+      getDept(row.libraryId).then( response => {
+        this.currentContactInfo = response.data.contactInfo;
+      })
+      this.contactInfoDialogVisible = true; // 显示对话框
     },
 
     /** 修改按钮操作 */
@@ -344,3 +331,30 @@ export default {
   }
 };
 </script>
+
+<style>
+.custom-dialog .el-dialog {
+  border-radius: 12px !important; /* 强制应用圆角到整个对话框 */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important; /* 添加阴影效果 */
+  overflow: hidden; /* 隐藏溢出的内容，确保内部元素不超出圆角边界 */
+}
+
+.custom-dialog .el-dialog__header,
+.custom-dialog .el-dialog__body,
+.custom-dialog .el-dialog__footer {
+  border-radius: 0 !important; /* 移除内部元素的圆角 */
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.custom-dialog .el-dialog__header {
+  background-color: #f5f5f5 !important; /* 应用头部背景色 */
+  color: #333 !important; /* 应用头部文字颜色 */
+}
+
+.custom-dialog .el-dialog__body {
+  padding: 20px !important; /* 应用主体内容的内边距 */
+  background-color: white !important; /* 应用主体背景色 */
+  color: #666 !important; /* 应用文字颜色 */
+}
+</style>

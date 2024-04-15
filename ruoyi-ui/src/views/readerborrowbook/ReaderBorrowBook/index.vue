@@ -123,46 +123,32 @@
       @pagination="getList"
     />
 
-    <!-- 添加或修改图书副本信息对话框 -->
+    <!-- 借阅信息填写对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="书名" prop="title">
-          <el-input v-model="form.title" placeholder="请输入书名" />
+      <el-form :model="form">
+        <el-form-item label="取阅方式">
+          <el-radio-group v-model="form.borrowMethod">
+            <el-radio :label="0">到馆</el-radio>
+            <el-radio :label="1">邮寄</el-radio>
+          </el-radio-group>
         </el-form-item>
-        <el-form-item label="作者" prop="author">
-          <el-input v-model="form.author" placeholder="请输入作者" />
+        <el-form-item v-if="form.borrowMethod === 1" label="寄送地址">
+          <el-input v-model="form.comments"></el-input>
         </el-form-item>
-        <el-form-item label="国际标准书号" prop="isbn">
-          <el-input v-model="form.isbn" placeholder="请输入国际标准书号" />
-        </el-form-item>
-        <el-form-item label="出版社" prop="publisher">
-          <el-input v-model="form.publisher" placeholder="请输入出版社" />
-        </el-form-item>
-        <el-form-item label="出版日期" prop="publishDate">
-          <el-date-picker clearable
-                          v-model="form.publishDate"
-                          type="date"
-                          value-format="yyyy-MM-dd"
-                          placeholder="请选择出版日期">
+        <el-form-item v-if="form.borrowMethod === 0" label="预约到馆时间">
+          <el-date-picker
+            clearable
+            v-model="form.borrowDate"
+            type="date"
+            placeholder="选择日期"
+            value-format="yyyy-MM-dd"
+            :picker-options="{
+      disabledDate(time) {
+        return time.getTime() < Date.now();
+      }
+    }"
+          >
           </el-date-picker>
-        </el-form-item>
-        <el-form-item label="图书分类" prop="category">
-          <el-input v-model="form.category" placeholder="请输入图书分类" />
-        </el-form-item>
-        <el-form-item label="图书描述" prop="description">
-          <el-input v-model="form.description" type="textarea" placeholder="请输入内容" />
-        </el-form-item>
-        <el-form-item label="图书语言" prop="language">
-          <el-input v-model="form.language" placeholder="请输入图书语言" />
-        </el-form-item>
-        <el-form-item label="页数" prop="pages">
-          <el-input v-model="form.pages" placeholder="请输入页数" />
-        </el-form-item>
-        <el-form-item label="封面图片URL" prop="coverUrl">
-          <el-input v-model="form.coverUrl" placeholder="请输入封面图片URL" />
-        </el-form-item>
-        <el-form-item label="版次" prop="edition">
-          <el-input v-model="form.edition" placeholder="请输入版次" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -179,11 +165,8 @@ import {
   getBookInfo,
   delBookInfo,
   addBookInfo,
-  updateBookInfo,
-  borrowBookByBookId, borrowBook
+  updateBookInfo, borrowBook
 } from "@/api/book/BookInfo";
-
-import { Message } from 'element-ui';
 
 export default {
   name: "BookInfo",
@@ -222,18 +205,6 @@ export default {
       },
       // 表单参数
       form: {},
-      // 表单校验
-      rules: {
-        libraryId: [
-          { required: true, message: "图书馆ID不能为空", trigger: "blur" }
-        ],
-        title: [
-          { required: true, message: "书名不能为空", trigger: "blur" }
-        ],
-        author: [
-          { required: true, message: "作者不能为空", trigger: "blur" }
-        ],
-      }
     };
   },
   created() {
@@ -260,6 +231,8 @@ export default {
       this.form = {
         bookId: null,
         libraryId: null,
+        readerId: this.$store.state.user.id,
+        borrowDate: new Date().toISOString().split('T')[0],
         title: null,
         author: null,
         isbn: null,
@@ -271,7 +244,9 @@ export default {
         pages: null,
         coverUrl: null,
         edition: null,
-        status: null
+        status: null,
+        borrowMethod: null,
+        comments: null
       };
       this.resetForm("form");
     },
@@ -309,36 +284,43 @@ export default {
     },
 
     /** 借阅按钮操作 */
+    // handleBorrow(row) {
+    //   // 事务管理，设置图书状态为借出+新增借阅记录至借阅表必须支持原子性
+    //   const readerId = this.$store.state.user.id;
+    //   const libraryId = row.libraryId;
+    //   const today = new Date();
+    //   const borrowInfo = {
+    //     bookId: row.bookId,
+    //     readerId: readerId,
+    //     libraryId: libraryId,
+    //     borrowDate: today.toISOString().split('T')[0], // 格式化日期为YYYY-MM-DD
+    //   };
+    //
+    //   // 调用API函数，传入借阅信息
+    //   borrowBook(borrowInfo).then(response => {
+    //     if (response.code === 200) {
+    //       // 借阅成功
+    //       this.$message.success('借阅成功，待审核');
+    //       this.getList();
+    //     } else {
+    //       // 后端返回了错误状态，借阅失败
+    //       this.$message.error(response.message || '借阅失败');
+    //     }
+    //   }).catch(error => {
+    //     // 请求发送失败或后端抛出异常
+    //     console.error('Borrow operation failed:', error);
+    //     this.$message.error('借阅失败，请稍后再试');
+    //   });
+    // },
     handleBorrow(row) {
-      // 事务管理，设置图书状态为借出+新增借阅记录至借阅表必须支持原子性
-      const readerId = this.$store.state.user.id;
-      const libraryId = row.libraryId;
-      const today = new Date();
-      const borrowInfo = {
-        bookId: row.bookId,
-        readerId: readerId,
-        libraryId: libraryId,
-        borrowDate: today.toISOString().split('T')[0], // 格式化日期为YYYY-MM-DD
-      };
-
-      console.log(borrowInfo);
-      // 调用API函数，传入借阅信息
-      borrowBook(borrowInfo).then(response => {
-        if (response.code === 200) {
-          // 借阅成功
-          this.$message.success('借阅成功，待审核');
-          this.getList();
-        } else {
-          // 后端返回了错误状态，借阅失败
-          this.$message.error(response.message || '借阅失败');
-        }
-      }).catch(error => {
-        // 请求发送失败或后端抛出异常
-        console.error('Borrow operation failed:', error);
-        this.$message.error('借阅失败，请稍后再试');
-      });
+      this.reset();
+      this.form.bookId = row.bookId;
+      getBookInfo(row.bookId).then( response => {
+        this.form.libraryId = response.data.libraryId;
+        this.title = "填写借阅信息";
+        this.open = true;
+      })
     },
-
 
     /** 查看按钮操作 */
     handleView(row) {
@@ -347,23 +329,11 @@ export default {
 
     /** 提交按钮 */
     submitForm() {
-      this.$refs["form"].validate(valid => {
-        if (valid) {
-          if (this.form.bookId != null) {
-            updateBookInfo(this.form).then(response => {
-              this.$modal.msgSuccess("修改成功");
-              this.open = false;
-              this.getList();
-            });
-          } else {
-            addBookInfo(this.form).then(response => {
-              this.$modal.msgSuccess("新增成功");
-              this.open = false;
-              this.getList();
-            });
-          }
-        }
-      });
+      console.log(this.form);
+      borrowBook(this.form).then(response => {
+        this.open = false;
+        this.getList();
+      })
     },
 
     /** 删除按钮操作 */
