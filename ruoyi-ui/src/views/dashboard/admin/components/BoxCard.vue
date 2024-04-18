@@ -63,19 +63,38 @@ export default {
   methods: {
     fetchData() {
       transactionList(this.queryParams).then(response => {
-        const total = response.total;
+        console.log(response);
+        let total = response.total;
         const statusCounts = response.rows.reduce((acc, { status }) => {
           acc[status] = (acc[status] || 0) + 1;
           return acc;
         }, {});
+        console.log(total);
+
+        // 检查 statusCounts[6] 是否存在，如果不存在则当作 0 处理
+        const countStatusSix = statusCounts[6] || 0;
+        total = total - countStatusSix;
+
+        console.log(statusCounts);
+        console.log(total);
 
         // 根据状态计算百分比
-        this.returnOnTimePercent = Number(((statusCounts[0] || 0) / total * 100).toFixed(1));
-        this.borrowingNormalPercent = Number(((statusCounts[1] || 0) / total * 100).toFixed(1));
-        this.returnLatePercent = Number(((statusCounts[2] || 0) / total * 100).toFixed(1));
-        this.notReturnedPercent = Number(((statusCounts[3] || 0) / total * 100).toFixed(1));
-        this.pendingPercent = Number(((statusCounts[4] || 0) / total * 100).toFixed(1));
-        this.rejectPercent = Number(((statusCounts[5] || 0) / total * 100).toFixed(1));
+        if (total > 0) {
+          this.returnOnTimePercent = Number(((statusCounts[0] || 0) / total * 100).toFixed(1));
+          this.borrowingNormalPercent = Number(((statusCounts[1] || 0) / total * 100).toFixed(1));
+          this.returnLatePercent = Number(((statusCounts[2] || 0) / total * 100).toFixed(1));
+          this.notReturnedPercent = Number(((statusCounts[3] || 0) / total * 100).toFixed(1));
+          this.pendingPercent = Number(((statusCounts[4] || 0) / total * 100).toFixed(1));
+          this.rejectPercent = Number(((statusCounts[5] || 0) / total * 100).toFixed(1));
+        } else {
+          // 如果 total 为 0，设定所有百分比为 0 或处理其他逻辑
+          this.returnOnTimePercent = 0;
+          this.borrowingNormalPercent = 0;
+          this.returnLatePercent = 0;
+          this.notReturnedPercent = 0;
+          this.pendingPercent = 0;
+          this.rejectPercent = 0;
+        }
       })
     },
     fetchLibraryIdAndSetBackgroundImage() {

@@ -68,6 +68,8 @@ export default {
           return 'warning'; // 待审核
         case 5:
           return 'danger'; // 借阅拒绝
+        case 6:
+          return 'warning'; // 等待确认
       }
     },
     borrowStatusText(status) {
@@ -84,6 +86,8 @@ export default {
           return '等待审核';
         case 5:
           return '借阅拒绝';
+        case 6:
+          return '等待确认'; // 等待确认
       }
     }
   }

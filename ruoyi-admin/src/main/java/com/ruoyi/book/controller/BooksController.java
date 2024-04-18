@@ -9,6 +9,7 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import javax.servlet.http.HttpServletResponse;
 
+import com.ruoyi.borrow.controller.BookBorrowingController;
 import com.ruoyi.common.utils.SecurityUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,7 @@ import static com.ruoyi.prediction.Prediction.predictNextWeek;
 
 /**
  * 图书副本信息Controller
- * 
+ *
  * @author ruoyi
  * @date 2024-03-12
  */
@@ -342,7 +343,7 @@ public class BooksController extends BaseController
     @GetMapping("/returnListWithStatusByReader")
     public TableDataInfo returnListWithStatusByReader(BookBorrowing bookBorrowing)
     {
-        startPage();
+        BookBorrowingController.startPageByBorrowDateDesc();
         bookBorrowing.setReaderId(SecurityUtils.getUserId()); // 设置当前用户ID
         System.out.println(bookBorrowing.getReaderId());
         bookBorrowing.setPendingStatus(1L);
@@ -458,7 +459,7 @@ public class BooksController extends BaseController
                 comments = "到馆取阅, 取阅时间为: " + formattedDate;
             } else if (borrowMethod == 1L) {
                 comments = "邮寄取阅, 邮寄地址为: " + request.getComments();
-                
+
             }
             bookBorrowing.setComments(comments);
             bookBorrowingService.insertBookBorrowing(bookBorrowing);

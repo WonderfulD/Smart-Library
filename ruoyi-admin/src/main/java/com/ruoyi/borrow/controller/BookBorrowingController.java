@@ -1,14 +1,20 @@
 package com.ruoyi.borrow.controller;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.ruoyi.borrow.domain.BookBorrowing;
 import com.ruoyi.borrow.service.IBookBorrowingService;
 import com.ruoyi.common.annotation.Log;
+import com.ruoyi.common.constant.HttpStatus;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
+import com.ruoyi.common.core.page.PageDomain;
 import com.ruoyi.common.core.page.TableDataInfo;
+import com.ruoyi.common.core.page.TableSupport;
 import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.poi.ExcelUtil;
+import com.ruoyi.common.utils.sql.SqlUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -55,6 +61,7 @@ public class BookBorrowingController extends BaseController
     @PreAuthorize("@ss.hasPermi('borrow:BookBorrowing:list')")
     @GetMapping("/listWithStatus")
     public TableDataInfo listWithStatus(BookBorrowing bookBorrowing) {
+        startPageByBorrowDateDesc();
         bookBorrowing.setLibraryId(SecurityUtils.getDeptId());
         List<BookBorrowing> list = bookBorrowingService.selectBookBorrowingListByDept(bookBorrowing);
         for (BookBorrowing borrowing : list) {
@@ -63,18 +70,29 @@ public class BookBorrowingController extends BaseController
         return getDataTable(sortBookBorrowingsByBorrowDateDesc(list));
     }
 
+    public static void startPageByBorrowDateDesc() {
+        PageDomain pageDomain = TableSupport.buildPageRequest();
+        Integer pageNum = pageDomain.getPageNum();
+        Integer pageSize = pageDomain.getPageSize();
+
+        String orderBy =  SqlUtil.escapeOrderBySql(SqlUtil.escapeOrderBySql("borrow_date desc"));
+        Boolean reasonable = pageDomain.getReasonable();
+        PageHelper.startPage(pageNum, pageSize, orderBy).setReasonable(reasonable);
+    }
+
     /**
      * 根据读者Id查询图书借阅信息列表，并添加借阅状态
      */
     @PreAuthorize("@ss.hasPermi('borrowbrowsing:BorrowBrowsing')")
     @GetMapping("/listWithStatusByReaderId")
     public TableDataInfo listWithStatusByReaderId(BookBorrowing bookBorrowing) {
+        startPageByBorrowDateDesc();
         bookBorrowing.setReaderId(SecurityUtils.getUserId());
         List<BookBorrowing> list = bookBorrowingService.selectBookBorrowingListByReaderId(bookBorrowing);
         for (BookBorrowing borrowing : list) {
             borrowing.setStatus((long) getBorrowingStatus(borrowing));
         }
-        return getDataTable(sortBookBorrowingsByBorrowDateDesc(list));
+        return getDataTable(list);
     }
 
     /**
@@ -182,7 +200,7 @@ public class BookBorrowingController extends BaseController
 //    @PreAuthorize("@ss.hasPermi('borrow:BookBorrowing:list')")
     @GetMapping("/listPendingByDept")
     public TableDataInfo listPendingByDept(BookBorrowing bookBorrowing) {
-        startPage();
+        startPageByBorrowDateDesc();
         bookBorrowing.setLibraryId(SecurityUtils.getDeptId()); // 设置当前用户所在部门ID
         bookBorrowing.setPendingStatus(2L);
         List<BookBorrowing> list = bookBorrowingService.selectBookBorrowingListByDept(bookBorrowing);
@@ -195,7 +213,7 @@ public class BookBorrowingController extends BaseController
 //    @PreAuthorize("@ss.hasPermi('borrow:BookBorrowing:list')")
     @GetMapping("/listReturnPendingByDept")
     public TableDataInfo listReturnPendingByDept(BookBorrowing bookBorrowing) {
-        startPage();
+        startPageByBorrowDateDesc();
         bookBorrowing.setLibraryId(SecurityUtils.getDeptId()); // 设置当前用户所在部门ID
         bookBorrowing.setReturnMethod(0L);
         List<BookBorrowing> list = new CopyOnWriteArrayList<>();
