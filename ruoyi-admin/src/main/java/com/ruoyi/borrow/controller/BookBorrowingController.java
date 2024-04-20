@@ -61,7 +61,6 @@ public class BookBorrowingController extends BaseController
     @PreAuthorize("@ss.hasPermi('borrow:BookBorrowing:list')")
     @GetMapping("/listWithStatus")
     public TableDataInfo listWithStatus(BookBorrowing bookBorrowing) {
-        startPageByBorrowDateDesc();
         bookBorrowing.setLibraryId(SecurityUtils.getDeptId());
         List<BookBorrowing> list = bookBorrowingService.selectBookBorrowingListByDept(bookBorrowing);
         for (BookBorrowing borrowing : list) {
