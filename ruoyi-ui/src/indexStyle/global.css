@@ -1,0 +1,114 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100;0,400;0,700;1,500&display=swap');
+
+:root {
+  --white: #fff;
+  --black: #000;
+  --primary: #1b2a4e;
+  --secondary: #42ba96;
+  --gray: #f8f9fa;
+  --blue-900: #070a13;
+  --blue-800: #141f39;
+  --blue-700: #21335f;
+  --blue-600: #2e4785;
+  --blue-500: #3b5caa;
+  --green-400: #7bd0b7;
+  --green-300: #a1decb;
+  --gray-800: #343a40;
+  --gray-700: #495057;
+  --gray-600: #868e96;
+  --gray-500: #adb5bd;
+  --gray-400: #ced4da;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+body {
+  font-family: 'Noto Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--gray);
+}
+
+img {
+  max-width: 100%;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  overflow-wrap: break-word;
+}
+
+h1, h2, h3, h4, h5 {
+  font-weight: bold;  /* 设置所有标题为粗体 */
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.list--inline {
+  display: flex;
+}
+
+/* ========== Utilities ========== */
+
+.d-none {
+  display: none !important;
+}
+
+@media screen and (min-width: 768px) {
+  .d-md-inline-block {
+    display: inline-block !important;
+  }
+}
+
+@media screen and (min-width: 992px) {
+  .d-lg-block {
+    display: block !important;
+  }
+}
+
+/* ========== Grid ========== */
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: -15px;
+  margin-left: -15px;
+}
+
+.row [class^="col-"] {
+  padding-right: 15px;
+  padding-left: 15px;
+}
+
+.col--12 {
+  flex: 0 0 100%;
+  max-width: 100%;
+}
+
+@media screen and (min-width: 992px) {
+  .col--lg-6 {
+    flex: 0 0 50%;
+  }
+
+  .col--lg-4 {
+    flex: 0 0 33.333333%;
+    max-width: 33.333333%;
+  }
+}

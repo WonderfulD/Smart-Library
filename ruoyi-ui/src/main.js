@@ -38,6 +38,10 @@ import VueMeta from 'vue-meta'
 // 字典数据组件
 import DictData from '@/components/DictData'
 
+import BaseContainer from "./components/newIndex/BaseContainer.vue";
+
+import BaseButton from "./components/newIndex/BaseButton.vue";
+
 // 全局方法挂载
 Vue.prototype.getDicts = getDicts
 Vue.prototype.getConfigKey = getConfigKey
@@ -57,6 +61,9 @@ Vue.component('Editor', Editor)
 Vue.component('FileUpload', FileUpload)
 Vue.component('ImageUpload', ImageUpload)
 Vue.component('ImagePreview', ImagePreview)
+Vue.component('base-container', BaseContainer)
+Vue.component('base-button', BaseButton)
+
 
 Vue.use(directive)
 Vue.use(plugins)
