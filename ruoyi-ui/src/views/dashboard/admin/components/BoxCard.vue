@@ -24,12 +24,16 @@
         <el-progress :percentage="notReturnedPercent" />
       </div>
       <div class="progress-item">
+        <span>借阅拒绝</span>
+        <el-progress :percentage="rejectPercent" />
+      </div>
+      <div class="progress-item">
         <span>等待审核</span>
         <el-progress :percentage="pendingPercent" />
       </div>
       <div class="progress-item">
-        <span>借阅拒绝</span>
-        <el-progress :percentage="rejectPercent" />
+        <span>等待确认</span>
+        <el-progress :percentage="returnPendingPercent" />
       </div>
     </div>
   </el-card>
@@ -51,6 +55,7 @@ export default {
       notReturnedPercent: 0,
       pendingPercent: 0,
       rejectPercent: 0,
+      returnPendingPercent: 0,
       libraryBackgroundImage: '', // 存储背景图片路径
       libraryLogoImage: '', // 存储logo图片路径
     }
@@ -63,20 +68,11 @@ export default {
   methods: {
     fetchData() {
       transactionList(this.queryParams).then(response => {
-        console.log(response);
         let total = response.total;
         const statusCounts = response.rows.reduce((acc, { status }) => {
           acc[status] = (acc[status] || 0) + 1;
           return acc;
         }, {});
-        console.log(total);
-
-        // 检查 statusCounts[6] 是否存在，如果不存在则当作 0 处理
-        const countStatusSix = statusCounts[6] || 0;
-        total = total - countStatusSix;
-
-        console.log(statusCounts);
-        console.log(total);
 
         // 根据状态计算百分比
         if (total > 0) {
@@ -86,6 +82,7 @@ export default {
           this.notReturnedPercent = Number(((statusCounts[3] || 0) / total * 100).toFixed(1));
           this.pendingPercent = Number(((statusCounts[4] || 0) / total * 100).toFixed(1));
           this.rejectPercent = Number(((statusCounts[5] || 0) / total * 100).toFixed(1));
+          this.returnPendingPercent = Number(((statusCounts[6] || 0) / total * 100).toFixed(1));
         } else {
           // 如果 total 为 0，设定所有百分比为 0 或处理其他逻辑
           this.returnOnTimePercent = 0;
@@ -94,6 +91,7 @@ export default {
           this.notReturnedPercent = 0;
           this.pendingPercent = 0;
           this.rejectPercent = 0;
+          this.returnPendingPercent = 0;
         }
       })
     },

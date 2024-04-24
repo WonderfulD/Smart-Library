@@ -36,6 +36,14 @@ export function listWordCloudDataByLibraryId(query) {
   })
 }
 
+// 根据图书馆Id查询雷达图数据
+export function getRadarChartDataByLibraryId() {
+  return request({
+    url: '/borrowrating/BorrowRating/getRadarByLibraryId',
+    method: 'get',
+  })
+}
+
 
 // 查询借阅评分详细
 export function getBorrowRating(borrowId) {

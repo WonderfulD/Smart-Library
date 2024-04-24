@@ -8,7 +8,6 @@
     <testimonials-section></testimonials-section>
     <newsletter-section></newsletter-section>
     <the-footer></the-footer>
-    <theme-picker />
   </div>
 </template>
 
@@ -21,7 +20,6 @@ import ServicesSection from "../components/newIndex/ServicesSection.vue";
 import TestimonialsSection from "../components/newIndex/TestimonialsSection.vue";
 import NewsletterSection from "../components/newIndex/NewsletterSection.vue";
 import TheFooter from '../components/newIndex/TheFooter';
-import ThemePicker from "../components/ThemePicker";
 
 export default {
   name: "Home",
@@ -30,7 +28,7 @@ export default {
     TestimonialsSection,
     ServicesSection,
     ValuesSection,
-    TheHeader, HeroSection, AboutSection, TheFooter, ThemePicker
+    TheHeader, HeroSection, AboutSection, TheFooter
   }
 };
 </script>

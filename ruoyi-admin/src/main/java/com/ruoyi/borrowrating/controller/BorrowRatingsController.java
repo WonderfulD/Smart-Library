@@ -31,7 +31,7 @@ import static com.ruoyi.prediction.Prediction.predictNextWeek;
 
 /**
  * 借阅评分Controller
- * 
+ *
  * @author ruoyi
  * @date 2024-03-30
  */
@@ -106,6 +106,67 @@ public class BorrowRatingsController extends BaseController
         // 返回封装好的词云数据
         return AjaxResult.success(wordCloudData);
     }
+
+    /**
+     * 获取当前图书馆的雷达图数据
+     */
+    @GetMapping("/getRadarByLibraryId")
+    public AjaxResult getRadarByLibraryId() {
+        long libraryId = SecurityUtils.getDeptId(); // 从安全上下文获取当前图书馆ID
+
+        // 创建BorrowRatings实例并设置libraryId
+        BorrowRatings query = new BorrowRatings();
+        query.setLibraryId(libraryId);
+
+        // 查询与此libraryId相关的所有借阅评分记录
+        List<BorrowRatings> ratingsList = borrowRatingsService.selectBorrowRatingsList(query);
+        if (ratingsList.isEmpty()) {
+            return AjaxResult.success("No data available", new int[6]); // 如果没有数据，返回空的雷达图数据
+        }
+
+        // 初始化计数器
+        int[] counts = new int[5]; // 五个类别的计数器
+        long totalRecommendationScore = 0; // 推荐意愿总得分
+
+        // 遍历每条评分记录
+        for (BorrowRatings rating : ratingsList) {
+            if (rating.getSelectionReasons() != null && !rating.getSelectionReasons().isEmpty()) {
+                // 解析选择理由并统计
+                String[] reasons = rating.getSelectionReasons().split(",");
+                for (String reason : reasons) {
+                    int reasonIndex = Integer.parseInt(reason);
+                    if (reasonIndex >= 0 && reasonIndex < counts.length) {
+                        counts[reasonIndex]++;
+                    }
+                }
+            }
+
+            // 根据推荐意愿计算得分
+            int recommendation = Math.toIntExact(rating.getRecommendationWillingness());
+            if (recommendation == 1) {
+                totalRecommendationScore += 50;
+            } else if (recommendation == 2) {
+                totalRecommendationScore += 100;
+            }
+        }
+
+        // 计算每个类别的百分比
+        int[] percentages = new int[5];
+        for (int i = 0; i < counts.length; i++) {
+            percentages[i] = counts[i] * 100 / ratingsList.size();
+        }
+
+        // 计算推荐意愿的平均分
+        int averageRecommendationScore = (int) totalRecommendationScore / ratingsList.size();
+
+        // 组装最终的雷达图数据
+        int[] radarData = new int[6];
+        System.arraycopy(percentages, 0, radarData, 0, percentages.length);
+        radarData[5] = averageRecommendationScore; // 将推荐意愿平均分作为第六个数据点
+
+        return AjaxResult.success("Radar Chart Data", radarData);
+    }
+
 
     /**
      * 根据图书馆Id查询读者对此图书馆评分列表

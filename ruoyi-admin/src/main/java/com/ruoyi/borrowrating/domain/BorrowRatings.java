@@ -14,7 +14,7 @@ import java.util.Date;
  * @author ruoyi
  * @date 2024-03-30
  */
-public class BorrowRatings extends BaseEntity {
+public class  BorrowRatings extends BaseEntity {
     private static final long serialVersionUID = 1L;
 
     /**

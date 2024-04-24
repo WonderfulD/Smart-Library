@@ -14,6 +14,7 @@ import { CanvasRenderer } from 'echarts/renderers';
 
 // 导入主题
 import 'echarts/theme/macarons';
+import {getRadarChartDataByLibraryId} from "@/api/borrowrating/BorrowRating";
 
 echarts.use([TitleComponent, TooltipComponent, LegendComponent, RadarChart, CanvasRenderer]);
 
@@ -34,11 +35,12 @@ export default {
   },
   data() {
     return {
-      chart: null
+      chart: null,
+      chartData: []
     };
   },
   mounted() {
-    this.initChart();
+    this.fetchData();
     window.addEventListener('resize', this.handleResize);
   },
   beforeDestroy() {
@@ -48,6 +50,12 @@ export default {
     window.removeEventListener('resize', this.handleResize);
   },
   methods: {
+    fetchData() {
+      getRadarChartDataByLibraryId().then( response => {
+        this.chartData = response.data;
+        this.initChart();
+      })
+    },
     initChart() {
       this.chart = echarts.init(this.$el);
 
@@ -57,12 +65,12 @@ export default {
           radius: '60%',
           center: ['50%', '50%'],
           indicator: [
-            { name: '资源丰富度', max: 100 },
-            { name: '环境与设施', max: 100 },
-            { name: '服务质量', max: 100 },
-            { name: '可获取性', max: 100 },
-            { name: '文化活动与学习支持', max: 100 },
-            { name: '更新与发展', max: 100 }
+            { name: '数字化访问与远程服务', max: 100 },
+            { name: '资源多样性与满足度', max: 100 },
+            { name: '效率优化与时间管理', max: 100 },
+            { name: '用户体验与服务便捷性', max: 100 },
+            { name: '技术融合与服务创新', max: 100 },
+            { name: '会员推荐意愿', max: 100 }
           ]
         },
         series: [{
@@ -70,7 +78,7 @@ export default {
           type: 'radar',
           data: [
             {
-              value: [80, 90, 75, 85, 80, 70],
+              value: this.chartData,
               name: '会员满意度评价'
             }
           ],
