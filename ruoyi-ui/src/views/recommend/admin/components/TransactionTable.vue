@@ -29,7 +29,7 @@
 </template>
 
 <script>
-import {getBookAverageRatingListByLibrary} from "@/api/rate/BookRatings";
+import {getBookAverageRatingList} from "@/api/rate/BookRatings";
 
 export default {
   data() {
@@ -52,7 +52,7 @@ export default {
   },
   methods: {
     fetchData() {
-      getBookAverageRatingListByLibrary().then(response => {
+      getBookAverageRatingList().then(response => {
         this.list = response.data.slice(0, 9) // 限制显示行数为8，根据需要调整
       })
     },

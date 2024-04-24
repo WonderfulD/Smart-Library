@@ -52,7 +52,7 @@ export default {
     PieChart,
     BarChart,
     TransactionTable,
-    RatingsTable
+    RatingsTable,
   },
   data() {
     return {

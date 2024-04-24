@@ -12,19 +12,19 @@ import com.ruoyi.borrow.service.IBookBorrowingService;
 
 /**
  * 图书借阅信息Service业务层处理
- * 
+ *
  * @author ruoyi
  * @date 2024-03-12
  */
 @Service
-public class BookBorrowingServiceImpl implements IBookBorrowingService 
+public class BookBorrowingServiceImpl implements IBookBorrowingService
 {
     @Autowired
     private BookBorrowingMapper bookBorrowingMapper;
 
     /**
      * 查询图书借阅信息
-     * 
+     *
      * @param borrowId 图书借阅信息主键
      * @return 图书借阅信息
      */
@@ -36,7 +36,7 @@ public class BookBorrowingServiceImpl implements IBookBorrowingService
 
     /**
      * 查询图书借阅信息列表
-     * 
+     *
      * @param bookBorrowing 图书借阅信息
      * @return 图书借阅信息
      */
@@ -48,7 +48,7 @@ public class BookBorrowingServiceImpl implements IBookBorrowingService
 
     /**
      * 新增图书借阅信息
-     * 
+     *
      * @param bookBorrowing 图书借阅信息
      * @return 结果
      */
@@ -60,7 +60,7 @@ public class BookBorrowingServiceImpl implements IBookBorrowingService
 
     /**
      * 修改图书借阅信息
-     * 
+     *
      * @param bookBorrowing 图书借阅信息
      * @return 结果
      */
@@ -72,7 +72,7 @@ public class BookBorrowingServiceImpl implements IBookBorrowingService
 
     /**
      * 批量删除图书借阅信息
-     * 
+     *
      * @param borrowIds 需要删除的图书借阅信息主键
      * @return 结果
      */
@@ -84,7 +84,7 @@ public class BookBorrowingServiceImpl implements IBookBorrowingService
 
     /**
      * 删除图书借阅信息信息
-     * 
+     *
      * @param borrowId 图书借阅信息主键
      * @return 结果
      */

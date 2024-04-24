@@ -74,8 +74,8 @@ public class BookRatingsController extends BaseController
      * 根据图书馆Id查询藏书总体评分列表
      *
      */
-    @GetMapping("/averageRatingList")
-    public AjaxResult getAverageRatingList() {
+    @GetMapping("/averageRatingListByLibraryId")
+    public AjaxResult getAverageRatingListByLibraryId() {
         List<BookRatings> allRatings = bookRatingsService.selectBookRatingsList(new BookRatings());
 
         Set<Long> bookIds = allRatings.stream()
@@ -99,6 +99,58 @@ public class BookRatingsController extends BaseController
             if (!Objects.equals(bookInfo.getLibraryId(), SecurityUtils.getDeptId())) {
                 continue;
             }
+
+            // 创建一个包含图书详细信息和平均评分的Map
+            Map<String, Object> bookDetails = new HashMap<>();
+            bookDetails.put("bookId", bookId);
+            bookDetails.put("title", bookInfo.getTitle());
+            bookDetails.put("author", bookInfo.getAuthor());
+            bookDetails.put("isbn", bookInfo.getIsbn());
+            bookDetails.put("publisher", bookInfo.getPublisher());
+            bookDetails.put("publishDate", bookInfo.getPublishDate());
+            bookDetails.put("category", bookInfo.getCategory());
+            bookDetails.put("description", bookInfo.getDescription());
+            bookDetails.put("language", bookInfo.getLanguage());
+            bookDetails.put("pages", bookInfo.getPages());
+            bookDetails.put("coverUrl", bookInfo.getCoverUrl());
+            bookDetails.put("edition", bookInfo.getEdition());
+            bookDetails.put("status", bookInfo.getStatus());
+            bookDetails.put("averageRating", averageRating);
+
+            responseList.add(bookDetails);
+        }
+
+        // 在返回之前对responseList按照averageRating从大到小进行排序
+        responseList.sort((map1, map2) -> Double.compare((double) map2.get("averageRating"), (double) map1.get("averageRating")));
+
+        return success(responseList);
+    }
+
+    /**
+     * 查询所有图书馆藏书总体评分列表
+     *
+     */
+    @GetMapping("/averageRatingList")
+    public AjaxResult getAverageRatingList() {
+        List<BookRatings> allRatings = bookRatingsService.selectBookRatingsList(new BookRatings());
+
+        Set<Long> bookIds = allRatings.stream()
+                .map(BookRatings::getBookId)
+                .collect(Collectors.toSet());
+
+        List<Map<String, Object>> responseList = new ArrayList<>();
+
+        for (Long bookId : bookIds) {
+            BookRatings queryBookRatings = new BookRatings();
+            queryBookRatings.setBookId(bookId);
+            List<BookRatings> list = bookRatingsService.selectBookRatingsList(queryBookRatings);
+            double averageRating = list.stream()
+                    .mapToDouble(BookRatings::getRating)
+                    .average()
+                    .orElse(0.0);
+
+            // 获取图书详细信息
+            Books bookInfo = booksService.selectBooksByBookId(bookId);
 
             // 创建一个包含图书详细信息和平均评分的Map
             Map<String, Object> bookDetails = new HashMap<>();

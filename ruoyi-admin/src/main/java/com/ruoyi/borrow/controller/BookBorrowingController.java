@@ -24,6 +24,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.ruoyi.prediction.Prediction.predictNextWeek;
@@ -173,22 +174,42 @@ public class BookBorrowingController extends BaseController
         return getDataTable(list);
     }
 
+
     /**
      * 根据当前登录借阅人ID，查询借阅过的图书列表
      */
     @GetMapping("/listByUserDistinctBooks")
     public TableDataInfo listByUserDistinctBooks(BookBorrowing bookBorrowing) {
+        // 手动获取分页参数
+        PageDomain pageDomain = TableSupport.buildPageRequest();
+        Integer pageNum = pageDomain.getPageNum();
+        Integer pageSize = pageDomain.getPageSize();
+
         bookBorrowing.setReaderId(SecurityUtils.getUserId()); // 设置当前用户ID
         List<BookBorrowing> list = bookBorrowingService.selectBookBorrowingListByReaderId(bookBorrowing);
 
-        // 使用Stream API过滤重复的图书条目
-        List<BookBorrowing> distinctList = list.stream()
-                .collect(Collectors.collectingAndThen(
-                        Collectors.toCollection(() -> new TreeSet<>(Comparator.comparingLong(BookBorrowing::getBookId))),
-                        ArrayList::new));
+        // 去重操作，基于图书ID
+        Map<Long, BookBorrowing> distinctMap = list.stream()
+                .collect(Collectors.toMap(BookBorrowing::getBookId, Function.identity(), (existing, replacement) -> existing));
 
-        return getDataTable(distinctList);
+        // 去重后的列表
+        List<BookBorrowing> distinctList = new ArrayList<>(distinctMap.values());
+
+        // 分页处理
+        int total = distinctList.size();
+        int fromIndex = Math.min((pageNum - 1) * pageSize, total);
+        int toIndex = Math.min(pageNum * pageSize, total);
+
+        List<BookBorrowing> pageList = distinctList.subList(fromIndex, toIndex);
+
+        TableDataInfo rspData = new TableDataInfo();
+        rspData.setCode(HttpStatus.SUCCESS);
+        rspData.setRows(pageList);
+        rspData.setTotal(total);
+
+        return rspData;
     }
+
 
 
 

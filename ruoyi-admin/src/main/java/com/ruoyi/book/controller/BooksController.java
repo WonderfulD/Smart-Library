@@ -11,6 +11,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.ruoyi.borrow.controller.BookBorrowingController;
 import com.ruoyi.common.utils.SecurityUtils;
+import com.ruoyi.rate.domain.BookRatings;
+import com.ruoyi.rate.service.IBookRatingsService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -53,6 +55,9 @@ public class BooksController extends BaseController
 
     @Autowired
     private IBookBorrowingService bookBorrowingService; // 自动注入借阅服务
+
+    @Autowired
+    private IBookRatingsService bookRatingsService;
 
     /**
      * 查询图书副本信息列表
@@ -251,8 +256,8 @@ public class BooksController extends BaseController
     /**
      * 根据图书馆ID查询图书借阅量列表
      */
-    @GetMapping("/listBorrowsList")
-    public AjaxResult listBorrowsList() {
+    @GetMapping("/listBorrowsListByLibraryId")
+    public AjaxResult listBorrowsListByLibraryId() {
         BookBorrowing bookBorrowing = new BookBorrowing();
         bookBorrowing.setLibraryId(SecurityUtils.getDeptId());
         List<BookBorrowing> bookBorrowingList = bookBorrowingService.selectBookBorrowingListByDept(bookBorrowing);
@@ -279,8 +284,97 @@ public class BooksController extends BaseController
             resultList.add(bookDetails);
         }
 
+        // 对resultList按照borrowCount倒序排序
+        resultList.sort((map1, map2) -> Integer.compare((int)map2.get("borrowCount"), (int)map1.get("borrowCount")));
+
         return AjaxResult.success(resultList);
     }
+
+    /**
+     * 根据读者id获取推荐图书列表
+     */
+    @GetMapping("/recommendations")
+    public AjaxResult getBookRecommendations() {
+        try {
+            Long readerId = SecurityUtils.getUserId();
+            BookBorrowing bookBorrowing = new BookBorrowing();
+            bookBorrowing.setReaderId(readerId);
+            // 获取此人已经借阅的书籍ID列表
+            List<Long> borrowedBookIds = bookBorrowingService.selectBookBorrowingListByReaderId(bookBorrowing)
+                    .stream()
+                    .map(BookBorrowing::getBookId)
+                    .collect(Collectors.toList());
+
+            // 获取所有书籍列表
+            List<Books> allBooks = booksService.selectBooksList(new Books());
+
+            // 过滤出此人没有借阅过的书籍
+            List<Books> unborrowedBooks = allBooks.stream()
+                    .filter(book -> !borrowedBookIds.contains(book.getBookId()))
+                    .collect(Collectors.toList());
+
+            // 获取所有书籍的评分信息
+            List<BookRatings> bookRatingsList = bookRatingsService.selectBookRatingsList(new BookRatings());
+
+            // 创建一个Map来存储书籍ID和对应的评分
+            Map<Long, Double> bookRatingsMap = new HashMap<>();
+            for (BookRatings rating : bookRatingsList) {
+                bookRatingsMap.put(rating.getBookId(), Double.valueOf(rating.getRating()));
+            }
+
+            // 对书籍列表按照评分进行排序
+            unborrowedBooks.sort((book1, book2) -> {
+                Double rating1 = bookRatingsMap.getOrDefault(book1.getBookId(), 0.0);
+                Double rating2 = bookRatingsMap.getOrDefault(book2.getBookId(), 0.0);
+                return Double.compare(rating2, rating1);
+            });
+
+            return AjaxResult.success("获取成功", unborrowedBooks);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return AjaxResult.error("获取未借阅书籍并排序失败");
+        }
+    }
+
+
+
+
+    /**
+     * 查询所有图书馆图书借阅量列表
+     */
+    @GetMapping("/listBorrowsList")
+    public AjaxResult listBorrowsList() {
+        BookBorrowing bookBorrowing = new BookBorrowing();
+        List<BookBorrowing> bookBorrowingList = bookBorrowingService.selectBookBorrowingListByDept(bookBorrowing);
+
+        // 使用Map存储借阅次数
+        Map<Long, Integer> borrowCounts = new HashMap<>();
+        for (BookBorrowing borrowing : bookBorrowingList) {
+            borrowCounts.put(borrowing.getBookId(), borrowCounts.getOrDefault(borrowing.getBookId(), 0) + 1);
+        }
+
+        // 使用List存储最终结果，每个元素包含图书详细信息和借阅次数
+        List<Map<String, Object>> resultList = new ArrayList<>();
+        for (Map.Entry<Long, Integer> entry : borrowCounts.entrySet()) {
+            Long bookId = entry.getKey();
+            Books bookInfo = booksService.selectBooksByBookId(bookId);
+
+            // 创建一个包含图书详细信息和借阅次数的Map
+            Map<String, Object> bookDetails = new HashMap<>();
+            bookDetails.put("bookId", bookId);
+            bookDetails.put("title", bookInfo.getTitle());
+            bookDetails.put("coverUrl", bookInfo.getCoverUrl());
+            bookDetails.put("borrowCount", entry.getValue());
+
+            resultList.add(bookDetails);
+        }
+
+        // 对resultList按照borrowCount倒序排序
+        resultList.sort((map1, map2) -> Integer.compare((int)map2.get("borrowCount"), (int)map1.get("borrowCount")));
+
+        return AjaxResult.success(resultList);
+    }
+
 
 
     /**

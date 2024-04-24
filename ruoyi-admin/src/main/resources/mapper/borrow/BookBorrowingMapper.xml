@@ -82,7 +82,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <select id="selectBookBorrowingList" parameterType="BookBorrowing" resultMap="BookBorrowingResult">
         <include refid="selectBookBorrowingVo"/>
-        <where>  
+        <where>
             <if test="borrowId != null "> and borrow_id = #{borrowId}</if>
             <if test="bookId != null "> and book_id = #{bookId}</if>
             <if test="readerId != null "> and reader_id = #{readerId}</if>
@@ -94,12 +94,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="borrowMethod != null "> and borrow_method = #{borrowMethod}</if>
         </where>
     </select>
-    
+
+
     <select id="selectBookBorrowingByBorrowId" parameterType="Long" resultMap="BookBorrowingResult">
         <include refid="selectBookBorrowingVo"/>
         where borrow_id = #{borrowId}
     </select>
-        
+
     <insert id="insertBookBorrowing" parameterType="BookBorrowing" useGeneratedKeys="true" keyProperty="borrowId">
         insert into BookBorrowing
         <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -159,7 +160,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </delete>
 
     <delete id="deleteBookBorrowingByBorrowIds" parameterType="String">
-        delete from BookBorrowing where borrow_id in 
+        delete from BookBorrowing where borrow_id in
         <foreach item="borrowId" collection="array" open="(" separator="," close=")">
             #{borrowId}
         </foreach>

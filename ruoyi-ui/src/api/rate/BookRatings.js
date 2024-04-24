@@ -55,7 +55,16 @@ export function getBookAverageRating(query) {
 }
 
 
-// 获取藏书总评分列表
+// 根据图书馆ID获取藏书总评分列表
+export function getBookAverageRatingListByLibrary(query) {
+  return request({
+    url: '/rate/BookRatings/averageRatingListByLibraryId',
+    method: 'get',
+    params: query
+  })
+}
+
+// 获取所有图书馆藏书总评分列表
 export function getBookAverageRatingList(query) {
   return request({
     url: '/rate/BookRatings/averageRatingList',
@@ -67,7 +76,25 @@ export function getBookAverageRatingList(query) {
 // 根据图书馆Id获取藏书总借阅量列表
 export function getEachBookBorrowsListByLibraryId(query) {
   return request({
+    url: '/book/BookInfo/listBorrowsListByLibraryId',
+    method: 'get',
+    params: query
+  })
+}
+
+// 获取所有图书馆藏书总借阅量列表
+export function getEachBookBorrowsList(query) {
+  return request({
     url: '/book/BookInfo/listBorrowsList',
+    method: 'get',
+    params: query
+  })
+}
+
+// 根据用户ID获取推荐书目列表
+export function getRecommendBooksListByReaderId(query) {
+  return request({
+    url: '/book/BookInfo/recommendations',
     method: 'get',
     params: query
   })

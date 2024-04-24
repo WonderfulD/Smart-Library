@@ -18,18 +18,16 @@
         </el-popover>
       </template>
     </el-table-column>
-    <el-table-column label="读者评分" min-width="180" align="center">
+    <el-table-column label="读者借阅量" min-width="180" align="center">
       <template slot-scope="scope">
-        <el-tag :type="ratingsTag(scope.row.averageRating)" :disable-transitions="false">
-          {{ scope.row.averageRating}}
-        </el-tag>
+        {{ scope.row.borrowCount}}
       </template>
     </el-table-column>
   </el-table>
 </template>
 
 <script>
-import {getBookAverageRatingListByLibrary} from "@/api/rate/BookRatings";
+import {getEachBookBorrowsList} from "@/api/rate/BookRatings";
 
 export default {
   data() {
@@ -52,24 +50,24 @@ export default {
   },
   methods: {
     fetchData() {
-      getBookAverageRatingListByLibrary().then(response => {
-        this.list = response.data.slice(0, 9) // 限制显示行数为8，根据需要调整
+      getEachBookBorrowsList().then(response => {
+        this.list = response.data.slice(0, 10) // 限制显示行数为10
       })
     },
-    ratingsTag(status) {
+    borrowStatusTag(status) {
       switch (status) {
-        case 5:
-          return 'success';
-        case 4:
-          return 'Brand Color';
-        case 3:
-          return 'Info';
-        case 2:
-          return 'danger';
-        case 1:
-          return 'warning';
         case 0:
-          return 'danger';
+          return 'success'; // 如期归还
+        case 1:
+          return 'Brand Color'; // 借阅正常
+        case 2:
+          return 'Info'; // 逾期归还
+        case 3:
+          return 'danger'; // 逾期未还
+        case 4:
+          return 'warning'; // 待审核
+        case 5:
+          return 'danger'; // 借阅拒绝
       }
     },
   }

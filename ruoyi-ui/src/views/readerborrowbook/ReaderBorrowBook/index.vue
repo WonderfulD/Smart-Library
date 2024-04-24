@@ -258,6 +258,7 @@ export default {
     /** 重置按钮操作 */
     resetQuery() {
       this.resetForm("queryForm");
+      this.resetForm("queryForm");
       this.handleQuery();
     },
     /** 多选框选中数据 */
@@ -284,34 +285,6 @@ export default {
     },
 
     /** 借阅按钮操作 */
-    // handleBorrow(row) {
-    //   // 事务管理，设置图书状态为借出+新增借阅记录至借阅表必须支持原子性
-    //   const readerId = this.$store.state.user.id;
-    //   const libraryId = row.libraryId;
-    //   const today = new Date();
-    //   const borrowInfo = {
-    //     bookId: row.bookId,
-    //     readerId: readerId,
-    //     libraryId: libraryId,
-    //     borrowDate: today.toISOString().split('T')[0], // 格式化日期为YYYY-MM-DD
-    //   };
-    //
-    //   // 调用API函数，传入借阅信息
-    //   borrowBook(borrowInfo).then(response => {
-    //     if (response.code === 200) {
-    //       // 借阅成功
-    //       this.$message.success('借阅成功，待审核');
-    //       this.getList();
-    //     } else {
-    //       // 后端返回了错误状态，借阅失败
-    //       this.$message.error(response.message || '借阅失败');
-    //     }
-    //   }).catch(error => {
-    //     // 请求发送失败或后端抛出异常
-    //     console.error('Borrow operation failed:', error);
-    //     this.$message.error('借阅失败，请稍后再试');
-    //   });
-    // },
     handleBorrow(row) {
       this.reset();
       this.form.bookId = row.bookId;

@@ -8,15 +8,15 @@ import com.ruoyi.borrow.domain.BookBorrowing;
 
 /**
  * 图书借阅信息Service接口
- * 
+ *
  * @author ruoyi
  * @date 2024-03-12
  */
-public interface IBookBorrowingService 
+public interface IBookBorrowingService
 {
     /**
      * 查询图书借阅信息
-     * 
+     *
      * @param borrowId 图书借阅信息主键
      * @return 图书借阅信息
      */
@@ -24,7 +24,7 @@ public interface IBookBorrowingService
 
     /**
      * 查询图书借阅信息列表
-     * 
+     *
      * @param bookBorrowing 图书借阅信息
      * @return 图书借阅信息集合
      */
@@ -32,7 +32,7 @@ public interface IBookBorrowingService
 
     /**
      * 新增图书借阅信息
-     * 
+     *
      * @param bookBorrowing 图书借阅信息
      * @return 结果
      */
@@ -40,7 +40,7 @@ public interface IBookBorrowingService
 
     /**
      * 修改图书借阅信息
-     * 
+     *
      * @param bookBorrowing 图书借阅信息
      * @return 结果
      */
@@ -48,7 +48,7 @@ public interface IBookBorrowingService
 
     /**
      * 批量删除图书借阅信息
-     * 
+     *
      * @param borrowIds 需要删除的图书借阅信息主键集合
      * @return 结果
      */
@@ -56,7 +56,7 @@ public interface IBookBorrowingService
 
     /**
      * 删除图书借阅信息信息
-     * 
+     *
      * @param borrowId 图书借阅信息主键
      * @return 结果
      */
@@ -78,7 +78,6 @@ public interface IBookBorrowingService
      * @return 符合条件的图书借阅信息列表
      */
     List<BookBorrowing> selectBookBorrowingListByReaderId(BookBorrowing bookBorrowing);
-
 
 
     /**
