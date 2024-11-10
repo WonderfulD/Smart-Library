@@ -36,6 +36,7 @@ logging:
   level:
     com.ruoyi: debug
     org.springframework: warn
+    org.springframework.jdbc.support.JdbcTransactionManager: debug
 
 # 用户配置
 user:

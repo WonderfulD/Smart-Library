@@ -8,6 +8,7 @@ import com.ruoyi.book.domain.Books;
 import com.ruoyi.book.service.IBooksService;
 import com.ruoyi.borrow.domain.BookBorrowing;
 import com.ruoyi.common.utils.SecurityUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +27,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
  * @author ruoyi
  * @date 2024-03-20
  */
+@Slf4j
 @RestController
 @RequestMapping("/rate/BookRatings")
 public class BookRatingsController extends BaseController
@@ -64,9 +66,7 @@ public class BookRatingsController extends BaseController
 
         // 创建一个Map来存放需要返回的数据
         Map<String, Object> data = new HashMap<>();
-        data.put("averageRating", averageRating);
-
-        // 使用一个参数的success方法
+        data.put("averageRating", (double) Math.round(averageRating * 10) / 10);
         return success(data);
     }
 

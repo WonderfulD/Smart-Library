@@ -13,8 +13,10 @@ import com.ruoyi.borrow.controller.BookBorrowingController;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.rate.domain.BookRatings;
 import com.ruoyi.rate.service.IBookRatingsService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -46,6 +48,8 @@ import static com.ruoyi.prediction.Prediction.predictNextWeek;
  * @author ruoyi
  * @date 2024-03-12
  */
+
+@Slf4j
 @RestController
 @RequestMapping("/book/BookInfo")
 public class BooksController extends BaseController
@@ -241,10 +245,6 @@ public class BooksController extends BaseController
         // 预计借阅量列表
         List<Integer> estimatedBorrowsCount = predictNextWeek(lastBorrowsCounts);
 
-        System.out.println(recentBorrowsCounts);
-        System.out.println(lastBorrowsCounts);
-        System.out.println(estimatedBorrowsCount);
-
         // 封装结果返回
         Map<String, Object> result = new HashMap<>();
         result.put("recentBorrowsCounts", recentBorrowsCounts);
@@ -439,7 +439,6 @@ public class BooksController extends BaseController
     {
         BookBorrowingController.startPageByBorrowDateDesc();
         bookBorrowing.setReaderId(SecurityUtils.getUserId()); // 设置当前用户ID
-        System.out.println(bookBorrowing.getReaderId());
         bookBorrowing.setPendingStatus(1L);
         List<BookBorrowing> list = bookBorrowingService.selectBookBorrowingByPendingStatusWithNullReturnDate(bookBorrowing);
         for (BookBorrowing borrowing : list) {
@@ -513,7 +512,7 @@ public class BooksController extends BaseController
      * 处理图书借阅
      * @return AjaxResult 响应结果
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @PostMapping("/borrow")
     public AjaxResult handleBorrow(@RequestBody BookBorrowing request) {
         try {
@@ -563,9 +562,12 @@ public class BooksController extends BaseController
 
             return AjaxResult.success("借阅成功，待审核");
         } catch (Exception e) {
-            // 如果有任何异常，Spring会回滚事务
-            e.printStackTrace();
-            return AjaxResult.error("借阅失败，请稍后再试");
+            // 记录异常日志
+            log.info("借阅处理失败，回滚", e);
+            // 手动设置事务回滚
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            // 返回错误信息
+            return AjaxResult.error("借阅失败，请联系管理员或稍后再试");
         }
     }
 
