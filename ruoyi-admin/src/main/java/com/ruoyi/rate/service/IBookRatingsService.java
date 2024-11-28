@@ -1,6 +1,8 @@
 package com.ruoyi.rate.service;
 
 import java.util.List;
+import java.util.Map;
+
 import com.ruoyi.rate.domain.BookRatings;
 
 /**
@@ -18,6 +20,14 @@ public interface IBookRatingsService
      * @return 藏书评分
      */
     public BookRatings selectBookRatingsByRatingId(Long ratingId);
+
+    /**
+     * 查询藏书总体评分
+     *
+     * @param bookId 藏书ID
+     * @return
+     */
+    public String getAverageRating(Long bookId);
 
     /**
      * 查询藏书评分列表
@@ -58,4 +68,12 @@ public interface IBookRatingsService
      * @return 结果
      */
     public int deleteBookRatingsByRatingId(Long ratingId);
+
+    /**
+     * 根据图书馆Id查询藏书总体评分列表
+     *
+     * @param libraryId 图书馆ID
+     * @return
+     */
+    public List<Map<String, Object>> getAverageRatingListForBooks(Long libraryId);
 }
