@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.storage.mapper.BookStorageMapper">
+
+    <resultMap type="BookStorage" id="BookStorageResult">
+        <result property="storageId"    column="storage_id"    />
+        <result property="bookId"    column="book_id"    />
+        <result property="libraryId"    column="library_id"    />
+        <result property="stock"    column="stock"    />
+        <result property="total"    column="total"    />
+        <result property="purchaseDate"    column="purchase_date"    />
+    </resultMap>
+
+    <sql id="selectBookStorageVo">
+        select storage_id, book_id, library_id, stock, total, purchase_date from book_storage
+    </sql>
+
+    <select id="selectBookStorageList" parameterType="BookStorage" resultMap="BookStorageResult">
+        <include refid="selectBookStorageVo"/>
+        <where>
+            <if test="storageId != null "> and storage_id = #{storageId}</if>
+            <if test="bookId != null "> and book_id = #{bookId}</if>
+            <if test="libraryId != null "> and library_id = #{libraryId}</if>
+            <if test="stock != null "> and stock = #{stock}</if>
+            <if test="total != null "> and total = #{total}</if>
+            <if test="purchaseDate != null "> and purchase_date = #{purchaseDate}</if>
+        </where>
+    </select>
+
+    <select id="selectBookStorageByStorageId" parameterType="Long" resultMap="BookStorageResult">
+        <include refid="selectBookStorageVo"/>
+        where storage_id = #{storageId}
+    </select>
+
+    <insert id="insertBookStorage" parameterType="BookStorage" useGeneratedKeys="true" keyProperty="storageId">
+        insert into book_storage
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="bookId != null">book_id,</if>
+            <if test="libraryId != null">library_id,</if>
+            <if test="stock != null">stock,</if>
+            <if test="total != null">total,</if>
+            <if test="purchaseDate != null">purchase_date,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="bookId != null">#{bookId},</if>
+            <if test="libraryId != null">#{libraryId},</if>
+            <if test="stock != null">#{stock},</if>
+            <if test="total != null">#{total},</if>
+            <if test="purchaseDate != null">#{purchaseDate},</if>
+         </trim>
+    </insert>
+
+    <update id="updateBookStorage" parameterType="BookStorage">
+        update book_storage
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="bookId != null">book_id = #{bookId},</if>
+            <if test="libraryId != null">library_id = #{libraryId},</if>
+            <if test="stock != null">stock = #{stock},</if>
+            <if test="total != null">total = #{total},</if>
+            <if test="purchaseDate != null">purchase_date = #{purchaseDate},</if>
+        </trim>
+        where storage_id = #{storageId}
+    </update>
+
+    <delete id="deleteBookStorageByStorageId" parameterType="Long">
+        delete from book_storage where storage_id = #{storageId}
+    </delete>
+
+    <delete id="deleteBookStorageByStorageIds" parameterType="String">
+        delete from book_storage where storage_id in
+        <foreach item="storageId" collection="array" open="(" separator="," close=")">
+            #{storageId}
+        </foreach>
+    </delete>
+
+    <!-- 查询库存合计大于1的书籍ID列表 -->
+    <select id="selectAvailableBookIds" resultType="java.lang.Integer">
+        SELECT book_id
+        FROM book_storage
+        GROUP BY book_id
+        HAVING SUM(stock) >= 1
+    </select>
+
+    <!-- 根据 libraryId 查询所有 book_id 列表（去重） -->
+    <select id="selectBookIdsByLibraryId" parameterType="int" resultType="java.lang.Integer">
+        SELECT DISTINCT book_id
+        FROM book_storage
+        WHERE library_id = #{libraryId}
+    </select>
+
+</mapper>

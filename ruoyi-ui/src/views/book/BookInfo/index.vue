@@ -195,6 +195,9 @@
         <el-form-item label="版次" prop="edition">
           <el-input v-model="form.edition" placeholder="请输入版次" />
         </el-form-item>
+        <el-form-item label="数量" prop="amount">
+          <el-input v-model="form.amount" placeholder="请输入数量" />
+        </el-form-item>
         <!-- 文件上传组件 -->
         <el-form-item label="上传文件">
           <!-- 图书封面上传 -->
@@ -223,7 +226,6 @@
 
 <script>
 import {
-  listBookInfo,
   getBookInfo,
   delBookInfo,
   addBookInfo,
@@ -278,14 +280,17 @@ export default {
       form: {},
       // 表单校验
       rules: {
-        libraryId: [
-          { required: true, message: "图书馆ID不能为空", trigger: "blur" }
-        ],
         title: [
           { required: true, message: "书名不能为空", trigger: "blur" }
         ],
         author: [
           { required: true, message: "作者不能为空", trigger: "blur" }
+        ],
+        amount: [
+          { required: true, message: "数量不能为空", trigger: "blur" }
+        ],
+        isbn: [
+          { required: true, message: "国际标准书号不能为空", trigger: "blur" }
         ],
       }
     };
@@ -325,7 +330,8 @@ export default {
         coverUrl: null,
         edition: null,
         status: null,
-        summary: null
+        summary: null,
+        amount: null
       };
       this.resetForm("form");
     },
@@ -349,7 +355,7 @@ export default {
     handleAdd() {
       this.reset();
       this.open = true;
-      this.title = "添加图书副本信息";
+      this.title = "添加图书信息";
       this.formKey++; // 改变key值来重置表单状态
       this.uploadKey++; // 如果需要单独重置上传组件
     },
@@ -378,7 +384,7 @@ export default {
             });
           } else {
             addBookInfo(this.form).then(response => {
-              this.$modal.msgSuccess("新增成功");
+              this.$modal.msgSuccess(response.msg);
               this.open = false;
               this.getList();
             });
@@ -405,11 +411,11 @@ export default {
     /** 删除按钮操作 */
     handleDelete(row) {
       const bookIds = row.bookId || this.ids;
-      this.$modal.confirm('是否确认删除图书副本信息编号为"' + bookIds + '"的数据项？').then(function() {
+      this.$modal.confirm('是否确认删除编号为"' + bookIds + '"的图书记录？').then(function() {
         return delBookInfo(bookIds);
-      }).then(() => {
+      }).then(response => {
         this.getList();
-        this.$modal.msgSuccess("删除成功");
+        this.$modal.msgSuccess(response.msg);
       }).catch(() => {});
     },
     /** 导出按钮操作 */

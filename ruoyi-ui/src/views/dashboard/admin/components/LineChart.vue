@@ -92,17 +92,30 @@ export default {
       this.setOptions(this.chartData)
     },
     setOptions({ expectedData, actualData } = {}) {
+      // 生成日期数组
+      const today = new Date();
+      const dateList = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        // 格式化日期为YYYY-MM-DD
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        dateList.push(`${year}-${month}-${day}`);
+      }
+
       this.chart.setOption({
         xAxis: {
-          data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+          data: dateList,
           boundaryGap: false,
           axisTick: {
             show: false
           }
         },
         grid: {
-          left: 10,
-          right: 10,
+          left: 35,
+          right: 35,
           bottom: 20,
           top: 30,
           containLabel: true

@@ -1,6 +1,7 @@
 package com.ruoyi.book.controller;
 
 import com.ruoyi.book.domain.Books;
+import com.ruoyi.book.domain.BooksBO;
 import com.ruoyi.book.service.IBooksService;
 import com.ruoyi.borrow.controller.BookBorrowingController;
 import com.ruoyi.borrow.domain.BookBorrowing;
@@ -14,6 +15,7 @@ import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.rate.domain.BookRatings;
 import com.ruoyi.rate.service.IBookRatingsService;
+import com.ruoyi.storage.service.IBookStorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -53,6 +55,9 @@ public class BooksController extends BaseController
     @Autowired
     private IBookRatingsService bookRatingsService;
 
+    @Autowired
+    private IBookStorageService bookStorageService;
+
     /**
      * 查询图书副本信息列表
      */
@@ -60,9 +65,10 @@ public class BooksController extends BaseController
     @GetMapping("/list")
     public TableDataInfo list(Books books)
     {
+        List<Integer> availableBookIDsList = bookStorageService.selectAvailableBookIDsList();
         startPage();
-        List<Books> list = booksService.selectBooksList(books);
-        return getDataTable(list);
+        List<Books> availableBooksList = booksService.selectAvailableBooksList(availableBookIDsList);
+        return getDataTable(availableBooksList);
     }
 
     /**
@@ -72,10 +78,10 @@ public class BooksController extends BaseController
     @GetMapping("/listByLibrary")
     public TableDataInfo listByLibrary(Books books)
     {
+        List<Integer> bookIdsByLibraryId = bookStorageService.selectBookIdsByLibraryId(SecurityUtils.getDeptId().intValue());
         startPage();
-        books.setLibraryId(SecurityUtils.getDeptId()); // 设置当前用户所在部门ID
-        List<Books> list = booksService.selectBooksListByLibrary(books);
-        return getDataTable(list);
+        List<Books> BooksList = booksService.selectAvailableBooksList(bookIdsByLibraryId);
+        return getDataTable(BooksList);
     }
 
     /**
@@ -142,36 +148,38 @@ public class BooksController extends BaseController
      */
     @GetMapping("/listRecentBooks")
     public AjaxResult listRecentBooks() {
-        LocalDate today = LocalDate.now();
-        LocalDate sevenDaysAgo = today.minusDays(7);
-
-        // 获取当前图书馆的所有图书信息
-        Books books = new Books();
-        books.setLibraryId(SecurityUtils.getDeptId());
-        List<Books> bookList = booksService.selectBooksListByLibrary(books);
-
-        // 初始化最近七天的藏书量列表
-        List<Integer> recentBooksCounts = new ArrayList<>(Collections.nCopies(7, 0));
-
-        // 遍历最近七天
-        for (int i = 1; i < 8; i++) {
-            LocalDate specificDay = sevenDaysAgo.plusDays(i);
-            int finalI = i;
-            // 计算截至到specificDay的藏书量
-            long count = bookList.stream()
-                    .filter(book -> {
-                        LocalDate purchaseDate = book.getPurchaseDate().toInstant()
-                                .atZone(ZoneId.systemDefault())
-                                .toLocalDate();
-                        return !purchaseDate.isAfter(specificDay);
-                    })
-                    .count();
-            recentBooksCounts.set(finalI - 1, (int) count);
-        }
-
-        // 预计藏书量列表，此示例中返回空列表
+//        LocalDate today = LocalDate.now();
+//        LocalDate sevenDaysAgo = today.minusDays(7);
+//
+//        // 获取当前图书馆的所有图书信息
+//        Books books = new Books();
+//        books.setLibraryId(SecurityUtils.getDeptId());
+//        List<Books> bookList = booksService.selectBooksListByLibrary(books);
+//
+//        // 初始化最近七天的藏书量列表
+//        List<Integer> recentBooksCounts = new ArrayList<>(Collections.nCopies(7, 0));
+//
+//        // 遍历最近七天
+//        for (int i = 1; i < 8; i++) {
+//            LocalDate specificDay = sevenDaysAgo.plusDays(i);
+//            int finalI = i;
+//            // 计算截至到specificDay的藏书量
+//            long count = bookList.stream()
+//                    .filter(book -> {
+//                        LocalDate purchaseDate = book.getPurchaseDate().toInstant()
+//                                .atZone(ZoneId.systemDefault())
+//                                .toLocalDate();
+//                        return !purchaseDate.isAfter(specificDay);
+//                    })
+//                    .count();
+//            recentBooksCounts.set(finalI - 1, (int) count);
+//        }
+//
+//        // 预计藏书量列表，此示例中返回空列表
+//        List<Integer> estimatedBooksCount = new ArrayList<>();
+//
         List<Integer> estimatedBooksCount = new ArrayList<>();
-
+        List<Integer> recentBooksCounts = new ArrayList<>();
         // 封装结果返回
         Map<String, Object> result = new HashMap<>();
         result.put("recentBooksCounts", recentBooksCounts);
@@ -323,8 +331,6 @@ public class BooksController extends BaseController
     }
 
 
-
-
     /**
      * 查询所有图书馆图书借阅量列表
      */
@@ -428,7 +434,6 @@ public class BooksController extends BaseController
         List<BookBorrowing> list = bookBorrowingService.selectBookBorrowingByPendingStatusWithNullReturnDate(bookBorrowing);
         for (BookBorrowing borrowing : list) {
             borrowing.setStatus((long) getBorrowingStatus(borrowing));
-
         }
         return getDataTable(list);
     }
@@ -442,9 +447,10 @@ public class BooksController extends BaseController
     @PostMapping("/export")
     public void export(HttpServletResponse response, Books books)
     {
-        List<Books> list = booksService.selectBooksList(books);
+        List<Integer> availableBookIDsList = bookStorageService.selectAvailableBookIDsList();
+        List<Books> availableBooksList = booksService.selectAvailableBooksList(availableBookIDsList);
         ExcelUtil<Books> util = new ExcelUtil<Books>(Books.class);
-        util.exportExcel(response, list, "图书副本信息数据");
+        util.exportExcel(response, availableBooksList, "图书信息数据");
     }
 
     /**
@@ -463,12 +469,9 @@ public class BooksController extends BaseController
 //    @PreAuthorize("@ss.hasPermi('book:BookInfo:add')")
     @Log(title = "图书副本信息", businessType = BusinessType.INSERT)
     @PostMapping
-    public AjaxResult add(@RequestBody Books books)
+    public AjaxResult add(@RequestBody BooksBO booksBO)
     {
-        Date today = new Date();
-        books.setPurchaseDate(today);
-        books.setLibraryId(SecurityUtils.getDeptId());
-        return toAjax(booksService.insertBooks(books));
+        return booksService.addBooks(booksBO);
     }
 
     /**
@@ -490,7 +493,7 @@ public class BooksController extends BaseController
 	@DeleteMapping("/{bookIds}")
     public AjaxResult remove(@PathVariable Long[] bookIds)
     {
-        return toAjax(booksService.deleteBooksByBookIds(bookIds));
+        return booksService.removeBooks(bookIds);
     }
 
     /**
@@ -531,8 +534,8 @@ public class BooksController extends BaseController
             bookBorrowing.setPendingStatus(2L);
             //设置借阅备注
             String comments = null;
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd"); // 创建日期格式化对象
-            String formattedDate = sdf.format(borrowDate); // 格式化日期
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            String formattedDate = borrowDate.format(formatter);
             if (borrowMethod == 0L) {  //到馆
                 comments = "到馆取阅, 取阅时间为: " + formattedDate;
             } else if (borrowMethod == 1L) {

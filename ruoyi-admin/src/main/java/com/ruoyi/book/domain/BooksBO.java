@@ -1,26 +1,17 @@
 package com.ruoyi.book.domain;
 
-import java.util.Date;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
-import com.ruoyi.common.annotation.Excel;
 import com.ruoyi.common.core.domain.BaseEntity;
 
-/**
- * 图书副本信息对象 Books
- *
- * @author ruoyi
- * @date 2024-03-12
- */
-public class Books extends BaseEntity {
+import java.util.Date;
+
+
+public class BooksBO extends BaseEntity {
     private static final long serialVersionUID = 1L;
 
     /**
      * 图书ID
      */
-    @Excel(name = "图书ID")
     private Long bookId;
 
     /**
@@ -31,25 +22,21 @@ public class Books extends BaseEntity {
     /**
      * 书名
      */
-    @Excel(name = "书名")
     private String title;
 
     /**
      * 作者
      */
-    @Excel(name = "作者")
     private String author;
 
     /**
      * 国际标准书号
      */
-    @Excel(name = "国际标准书号")
     private String isbn;
 
     /**
      * 出版社
      */
-    @Excel(name = "出版社")
     private String publisher;
 
     /**
@@ -60,13 +47,11 @@ public class Books extends BaseEntity {
     /**
      * 图书分类
      */
-    @Excel(name = "图书分类")
     private String category;
 
     /**
      * 图书描述
      */
-    @Excel(name = "图书描述")
     private String description;
 
     /**
@@ -87,7 +72,6 @@ public class Books extends BaseEntity {
     /**
      * 版次
      */
-    @Excel(name = "版次")
     private String edition;
 
     /**
@@ -98,8 +82,9 @@ public class Books extends BaseEntity {
     /**
      * 简介
      */
-    @Excel(name = "简介")
     private String summary;
+
+    private Long amount;
 
     public Long getBookId() {
         return bookId;
@@ -221,9 +206,17 @@ public class Books extends BaseEntity {
         this.summary = summary;
     }
 
+    public Long getAmount() {
+        return amount;
+    }
+
+    public void setAmount(Long amount) {
+        this.amount = amount;
+    }
+
     @Override
     public String toString() {
-        return "Books{" +
+        return "BooksStorage{" +
                 "bookId=" + bookId +
                 ", libraryId=" + libraryId +
                 ", title='" + title + '\'' +
@@ -239,6 +232,8 @@ public class Books extends BaseEntity {
                 ", edition='" + edition + '\'' +
                 ", status=" + status +
                 ", summary='" + summary + '\'' +
+                ", amount=" + amount +
                 '}';
     }
 }
+

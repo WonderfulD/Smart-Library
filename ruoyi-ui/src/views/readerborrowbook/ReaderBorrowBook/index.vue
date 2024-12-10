@@ -214,7 +214,7 @@ export default {
     /** 查询所有图书馆图书副本信息列表 */
     getList() {
       this.loading = true;
-      this.queryParams.Status = 1; //过滤不可用的书籍
+      // this.queryParams.Status = 1; //过滤不可用的书籍
       listBookInfo(this.queryParams).then(response => {
         this.BookInfoList = response.rows;
         this.total = response.total;
