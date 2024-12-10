@@ -1,42 +1,32 @@
 package com.ruoyi.book.controller;
 
+import com.ruoyi.book.domain.Books;
+import com.ruoyi.book.service.IBooksService;
+import com.ruoyi.borrow.controller.BookBorrowingController;
+import com.ruoyi.borrow.domain.BookBorrowing;
+import com.ruoyi.borrow.service.IBookBorrowingService;
+import com.ruoyi.common.annotation.Log;
+import com.ruoyi.common.core.controller.BaseController;
+import com.ruoyi.common.core.domain.AjaxResult;
+import com.ruoyi.common.core.page.TableDataInfo;
+import com.ruoyi.common.enums.BusinessType;
+import com.ruoyi.common.utils.SecurityUtils;
+import com.ruoyi.common.utils.poi.ExcelUtil;
+import com.ruoyi.rate.domain.BookRatings;
+import com.ruoyi.rate.service.IBookRatingsService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
-
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
-import javax.servlet.http.HttpServletResponse;
-
-import com.ruoyi.borrow.controller.BookBorrowingController;
-import com.ruoyi.common.utils.SecurityUtils;
-import com.ruoyi.rate.domain.BookRatings;
-import com.ruoyi.rate.service.IBookRatingsService;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import com.ruoyi.common.annotation.Log;
-import com.ruoyi.common.core.controller.BaseController;
-import com.ruoyi.common.core.domain.AjaxResult;
-import com.ruoyi.common.enums.BusinessType;
-import com.ruoyi.book.domain.Books;
-import com.ruoyi.book.service.IBooksService;
-import com.ruoyi.common.utils.poi.ExcelUtil;
-import com.ruoyi.common.core.page.TableDataInfo;
-import org.springframework.transaction.annotation.Transactional;
-import com.ruoyi.borrow.domain.BookBorrowing;
-import com.ruoyi.borrow.service.IBookBorrowingService;
-
 import java.util.stream.Collectors;
 
 import static com.ruoyi.borrow.controller.BookBorrowingController.getBorrowingStatus;
@@ -112,7 +102,7 @@ public class BooksController extends BaseController
             // 返回统计结果
             return AjaxResult.success("获取成功", categoryCount);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.info("根据图书馆ID查询读者借阅图书类别分布 报错:{}", e.getMessage());
             return AjaxResult.error("获取图书类别统计信息失败");
         }
     }
@@ -142,7 +132,7 @@ public class BooksController extends BaseController
             // 返回统计结果
             return AjaxResult.success("获取成功", categoryCount);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.info("根据读者ID查询读者借阅图书类别分布 报错:{}", e.getMessage());
             return AjaxResult.error("获取图书类别统计信息失败");
         }
     }
@@ -213,9 +203,7 @@ public class BooksController extends BaseController
             // 计算截至到specificDay的借阅量
             long count = bookBorrowingList.stream()
                     .filter(borrowing -> {
-                        LocalDate borrowDate = borrowing.getBorrowDate().toInstant()
-                                .atZone(ZoneId.systemDefault())
-                                .toLocalDate();
+                        LocalDate borrowDate = borrowing.getBorrowDate();
                         return !borrowDate.isAfter(specificDay);
                     })
                     .count();
@@ -233,9 +221,7 @@ public class BooksController extends BaseController
             // 计算截至到specificDay的借阅量
             long count = bookBorrowingList.stream()
                     .filter(borrowing -> {
-                        LocalDate borrowDate = borrowing.getBorrowDate().toInstant()
-                                .atZone(ZoneId.systemDefault())
-                                .toLocalDate();
+                        LocalDate borrowDate = borrowing.getBorrowDate();
                         return !borrowDate.isAfter(specificDay);
                     })
                     .count();
@@ -331,7 +317,7 @@ public class BooksController extends BaseController
 
             return AjaxResult.success("获取成功", unborrowedBooks);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.info("根据读者id获取推荐图书列表 报错:{}", e.getMessage());
             return AjaxResult.error("获取未借阅书籍并排序失败");
         }
     }
@@ -371,7 +357,6 @@ public class BooksController extends BaseController
 
         // 对resultList按照borrowCount倒序排序
         resultList.sort((map1, map2) -> Integer.compare((int)map2.get("borrowCount"), (int)map1.get("borrowCount")));
-
         return AjaxResult.success(resultList);
     }
 
@@ -528,7 +513,7 @@ public class BooksController extends BaseController
             }
             Long readerId = request.getReaderId();
             Long libraryId = request.getLibraryId();
-            Date borrowDate = request.getBorrowDate();
+            LocalDate borrowDate = request.getBorrowDate();
             // 创建并保存借阅记录
             BookBorrowing bookBorrowing = new BookBorrowing();
             bookBorrowing.setBookId(bookId);
@@ -559,11 +544,10 @@ public class BooksController extends BaseController
             // 更新图书状态为待审核
             book.setStatus(2L);
             booksService.updateBooks(book);
-
             return AjaxResult.success("借阅成功，待审核");
         } catch (Exception e) {
             // 记录异常日志
-            log.info("借阅处理失败，回滚", e);
+            log.info("借阅处理失败，回滚\n错误信息{}", e.getMessage());
             // 手动设置事务回滚
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             // 返回错误信息
@@ -596,16 +580,16 @@ public class BooksController extends BaseController
             book.setStatus(1L);
             booksService.updateBooks(book);
             Long borrowId = request.getBorrowId();
-            Date dueDate = request.getDueDate();
-            Date returnDate = new Date();
+            LocalDate dueDate = request.getDueDate();
+            LocalDate returnDate = LocalDate.now();
             String comment = "";
             Long fine = 0L;
-            if (returnDate.before(dueDate)) { //按时归还
+            if (returnDate.isBefore(dueDate)) { //按时归还
                 comment += "按时归还";
             } else { //逾期 每天逾期罚款0.3元,最高不超过30元,逾期超过100天按最高30元计算。
                 comment += "逾期";
                 //计算逾期天数
-                long overdueDays = (returnDate.getTime() - dueDate.getTime()) / (24 * 60 * 60 * 1000);
+                long overdueDays = returnDate.compareTo(dueDate);
                 //计算罚款
                 if (overdueDays <= 100) { //封顶100天
                     fine = Math.min(overdueDays * 3, 30L) * 10; //每天0.3元,封顶30元
@@ -624,8 +608,9 @@ public class BooksController extends BaseController
 
             return AjaxResult.success("图书已确认归还");
         } catch (Exception e) {
-            // 如果有任何异常，Spring会回滚事务
-            e.printStackTrace();
+            log.info("确认图书归还失败，回滚\n错误信息{}", e.getMessage());
+            // 手动设置事务回滚
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return AjaxResult.error("确认归还失败，请稍后再试");
         }
     }
@@ -653,7 +638,7 @@ public class BooksController extends BaseController
             // 创建并修改借阅记录
             BookBorrowing bookBorrowing = new BookBorrowing();
             Long borrowId = request.getBorrowId();
-            Date returnDate = request.getReturnDate();
+            LocalDate returnDate = request.getReturnDate();
             Long returnMethod = request.getReturnMethod();
             String comment;
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd"); // 创建日期格式化对象
@@ -673,8 +658,9 @@ public class BooksController extends BaseController
             bookBorrowingService.updateBookBorrowing(bookBorrowing);
             return AjaxResult.success("已提交，您的预计归还日期为:" + formattedDate);
         } catch (Exception e) {
-            // 如果有任何异常，Spring会回滚事务
-            e.printStackTrace();
+            log.info("图书归还失败，回滚\n错误信息{}", e.getMessage());
+            // 手动设置事务回滚
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return AjaxResult.error("归还失败，请稍后再试");
         }
     }
@@ -688,44 +674,6 @@ public class BooksController extends BaseController
     @Transactional
     @PostMapping("/extension")
     public AjaxResult handleExtension(@RequestBody BookBorrowing request) {
-        try {
-            Long bookId = request.getBookId();
-            // 先检查图书是否存在
-            Books book = booksService.selectBooksByBookId(bookId);
-            if (book == null) {
-                return AjaxResult.error("图书不存在");
-            }
-            // 检查图书是否已归还
-            if (book.getStatus() == 1) {
-                return AjaxResult.error("图书已归还");
-            }else if (book.getStatus() == 2) {
-                return AjaxResult.error("当前无法完成此操作");
-            }
-            Long borrowId = request.getBorrowId();
-            //检查是否已有延期
-            BookBorrowing borrowing = bookBorrowingService.selectBookBorrowingByBorrowId(borrowId);
-            if (borrowing.getComments().equals("延期15天成功")) {
-                return AjaxResult.error("不允许延期，你已经申请过延期！");
-            }
-            Date dueDate = request.getDueDate();
-            Calendar calendar = Calendar.getInstance(); // 获取一个Calendar实例
-            calendar.setTime(dueDate); // 设置calendar的时间为dueDate
-            calendar.add(Calendar.DAY_OF_MONTH, 15); // 在dueDate上增加15天
-
-            // 获取新的日期，即extensionDate
-            Date extensionDate = calendar.getTime();
-            // 创建并修改借阅记录
-            BookBorrowing bookBorrowing = new BookBorrowing();
-            bookBorrowing.setBookId(bookId);
-            bookBorrowing.setBorrowId(borrowId);
-            bookBorrowing.setDueDate(extensionDate);
-            bookBorrowing.setComments("延期15天成功");
-            bookBorrowingService.updateBookBorrowing(bookBorrowing);
-            return AjaxResult.success("延期成功");
-        } catch (Exception e) {
-            // 如果有任何异常，Spring会回滚事务
-            e.printStackTrace();
-            return AjaxResult.error("延期失败，请稍后再试");
-        }
+        return bookBorrowingService.handleExtension(request);
     }
 }

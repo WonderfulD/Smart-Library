@@ -113,8 +113,8 @@ public class BookBorrowingController extends BaseController
                 return 2; //逾期归还
             }
         } else {
-            Date today = new Date();
-            if (today.compareTo(borrowing.getDueDate()) <= 0) {
+            LocalDate today = LocalDate.now();
+            if (today.isBefore(borrowing.getDueDate())) {
                 return 1; //借阅正常
             } else {
                 return 3; //逾期未还
@@ -148,7 +148,7 @@ public class BookBorrowingController extends BaseController
             LocalDate targetDate = today.minusDays(i);
             BookBorrowing bookBorrowing = new BookBorrowing();
             bookBorrowing.setLibraryId(SecurityUtils.getDeptId());
-            bookBorrowing.setBorrowDate(Date.from(targetDate.atStartOfDay(ZoneId.systemDefault()).toInstant())); // 设置查询日期
+            bookBorrowing.setBorrowDate(targetDate); // 设置查询日期
 
             List<BookBorrowing> dailyList = bookBorrowingService.selectBookBorrowingListByLibraryIdWithCategory(bookBorrowing);
             Map<String, Integer> dailyCategoryCounts = dailyList.stream()
@@ -211,9 +211,6 @@ public class BookBorrowingController extends BaseController
     }
 
 
-
-
-
     /**
      * 根据当前登录管理员所在图书馆ID，查询图书借阅待审批列表
      */
@@ -254,8 +251,8 @@ public class BookBorrowingController extends BaseController
 
 
 
-    /** 根据当前登录管理员所在图书馆ID，查询当前会员数
-     *
+    /**
+     * 根据当前登录管理员所在图书馆ID，查询当前会员数
      */
     @GetMapping("/getTotalMembers")
     public AjaxResult getTotalMembers() throws Exception {
@@ -267,8 +264,8 @@ public class BookBorrowingController extends BaseController
     }
 
 
-    /** 根据当前登录管理员所在图书馆ID，查询会员数列表
-     *
+    /**
+     * 根据当前登录管理员所在图书馆ID，查询会员数列表
      */
     @GetMapping("/listRecentMembers")
     public AjaxResult listRecentMembers() throws Exception {
@@ -282,49 +279,10 @@ public class BookBorrowingController extends BaseController
             totalMembersCounts.add(bookBorrowingService.countDistinctReaderIdsByDate(Date.from(fourteenDaysAgo.plusDays(i).atStartOfDay().atZone(ZoneId.systemDefault()).toInstant()), SecurityUtils.getDeptId()));
         }
 
-        System.out.println("totalMembersCounts:" + totalMembersCounts);
-
         result.put("recentMembersCounts", totalMembersCounts.subList(7, 14));
         result.put("estimatedMembersCount", predictNextWeek(totalMembersCounts.subList(0, 8)));
 
         return AjaxResult.success(result);
-    }
-
-    /**
-     * 预估未来七天的会员量
-     */
-    public List<Integer> estimateFutureMemberCounts(List<Integer> recentMembersCounts) {
-        if (recentMembersCounts == null || recentMembersCounts.size() <= 1) {
-            throw new IllegalArgumentException("The list of recent member counts must contain at least two days of data.");
-        }
-
-        // 基于平均增长率进行预估
-        int lastKnownCount = recentMembersCounts.get(recentMembersCounts.size() - 1);
-
-        // 初始化预估列表，开始时仅包含最后一个已知值
-        List<Integer> estimatedMemberCounts = new ArrayList<>();
-        estimatedMemberCounts.add(lastKnownCount);
-
-        // 进行七天的预估
-        for (int i = 1; i <= 7; i++) {
-
-            int nextDayCount = lastKnownCount;
-
-            // 检查是否需要调整（即当前是连续的第三个数字）
-            if (i >= 3 && estimatedMemberCounts.get(i - 2).equals(estimatedMemberCounts.get(i - 3))
-                    && estimatedMemberCounts.get(i - 2).equals(estimatedMemberCounts.get(i - 1))) {
-                nextDayCount = (int) Math.round(nextDayCount * 1.10); // 上浮10%
-                nextDayCount = Math.max(nextDayCount, lastKnownCount + 1); // 确保至少增加1
-            }
-
-            estimatedMemberCounts.add(nextDayCount);
-            lastKnownCount = nextDayCount;
-        }
-
-        // 移除初始化时加入的最后一个已知值
-        estimatedMemberCounts.remove(0);
-
-        return estimatedMemberCounts;
     }
 
 

@@ -55,7 +55,9 @@ public class BookRatingsController extends BaseController
         String averageRating = bookRatingsService.getAverageRating(bookId);
         // 创建一个Map来存放需要返回的数据
         Map<String, Object> data = new HashMap<>();
-        data.put("averageRating", Double.valueOf(averageRating));
+        if (averageRating == null) {
+            data.put("averageRating", -1);
+        }else data.put("averageRating", Double.valueOf(averageRating));
         return success(data);
     }
 

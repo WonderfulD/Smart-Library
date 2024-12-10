@@ -30,6 +30,15 @@ public interface IBookRatingsService
     public String getAverageRating(Long bookId);
 
     /**
+     * 查询藏书总体评分
+     * 逻辑过期解决缓存击穿
+     *
+     * @param bookId 藏书ID
+     * @return 藏书总体评分
+     */
+    public String getAverageRatingWithLogicalExpiration(Long bookId);
+
+    /**
      * 查询藏书评分列表
      *
      * @param bookRatings 藏书评分

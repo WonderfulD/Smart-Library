@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.ruoyi.book.domain.Books;
 import com.ruoyi.borrow.domain.BookBorrowing;
+import com.ruoyi.common.core.domain.AjaxResult;
 
 /**
  * 图书借阅信息Service接口
@@ -69,7 +70,7 @@ public interface IBookBorrowingService
      * @param bookBorrowing 包含查询条件的实体，包括图书馆（部门）ID
      * @return 符合条件的图书借阅信息列表
      */
-    List<BookBorrowing> selectBookBorrowingListByDept(BookBorrowing bookBorrowing);
+    public List<BookBorrowing> selectBookBorrowingListByDept(BookBorrowing bookBorrowing);
 
     /**
      * 根据借阅人ID查询图书借阅信息
@@ -77,7 +78,7 @@ public interface IBookBorrowingService
      * @param bookBorrowing 包含查询条件的实体，包括借阅人ID
      * @return 符合条件的图书借阅信息列表
      */
-    List<BookBorrowing> selectBookBorrowingListByReaderId(BookBorrowing bookBorrowing);
+    public List<BookBorrowing> selectBookBorrowingListByReaderId(BookBorrowing bookBorrowing);
 
 
     /**
@@ -86,7 +87,7 @@ public interface IBookBorrowingService
      * @param date 借阅日期
      * @return 符合条件的会员数
      */
-    Integer countDistinctReaderIdsByDate(Date date, Long libraryId);
+    public Integer countDistinctReaderIdsByDate(Date date, Long libraryId);
 
 
     /**
@@ -95,7 +96,7 @@ public interface IBookBorrowingService
      * @param bookBorrowing 包含查询条件的实体，包括借阅审核情况
      * @return 符合条件的图书借阅信息列表
      */
-    List<BookBorrowing> selectBookBorrowingByPendingStatusWithNullReturnDate(BookBorrowing bookBorrowing);
+    public List<BookBorrowing> selectBookBorrowingByPendingStatusWithNullReturnDate(BookBorrowing bookBorrowing);
 
     /**
      * 根据当前登录管理员所在图书馆ID，查询每天借阅图书所属种类列表
@@ -103,6 +104,12 @@ public interface IBookBorrowingService
      * @param bookBorrowing 包含查询条件的实体，包括图书馆Id
      * @return 符合条件的图书借阅信息列表，包括图书种类
      */
-    List<BookBorrowing> selectBookBorrowingListByLibraryIdWithCategory(BookBorrowing bookBorrowing);
+    public List<BookBorrowing> selectBookBorrowingListByLibraryIdWithCategory(BookBorrowing bookBorrowing);
 
+    /**
+     * 处理借阅延期
+     * @param request
+     * @return 响应结果
+     */
+    public AjaxResult handleExtension(BookBorrowing request);
 }

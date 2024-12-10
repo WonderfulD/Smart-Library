@@ -1,7 +1,9 @@
 package com.ruoyi.borrow.domain;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -10,36 +12,119 @@ import com.ruoyi.common.core.domain.BaseEntity;
 
 /**
  * 图书借阅信息对象 BookBorrowing
- * 
+ *
  * @author ruoyi
  * @date 2024-03-12
  */
-public class BookBorrowing extends BaseEntity
-{
+public class BookBorrowing extends BaseEntity {
     private static final long serialVersionUID = 1L;
 
-    /** 借阅号 */
+    /**
+     * 借阅号
+     */
     @Excel(name = "借阅号")
     private Long borrowId;
 
-    /** 书籍ID */
+    /**
+     * 书籍ID
+     */
     @Excel(name = "书籍ID")
     private Long bookId;
 
-    /** 书名 */
+    /**
+     * 书名
+     */
     @Excel(name = "书名")
     private String title;
 
-    /** 书的类别 */
+    /**
+     * 书的类别
+     */
     @Excel(name = "类别")
     private String category;
+    /**
+     * 读者ID
+     */
+    @Excel(name = "读者ID")
+    private Long readerId;
+    /**
+     * 图书馆ID
+     */
+    @Excel(name = "图书馆ID")
+    private Long libraryId;
+    /**
+     * 图书馆名称
+     */
+    private String deptName;
+    /**
+     * 借出日期
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    @Excel(name = "借出日期", width = 30, dateFormat = "yyyy-MM-dd")
+    private LocalDate borrowDate;
+    /**
+     * 应还日期
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    @Excel(name = "应还日期", width = 30, dateFormat = "yyyy-MM-dd")
+    private LocalDate dueDate;
+    /**
+     * 实际还书日期
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    @Excel(name = "实际还书日期", width = 30, dateFormat = "yyyy-MM-dd")
+    private LocalDate returnDate;
+    /**
+     * 逾期罚款
+     */
+    @Excel(name = "逾期罚款")
+    private BigDecimal fine;
+    /**
+     * 借阅备注
+     */
+    @Excel(name = "借阅备注")
+    private String comments;
+    /**
+     * 借阅状态
+     */
+    @Excel(name = "借阅状态")
+    private Long status;
+    /**
+     * 审核状态
+     */
+    @Excel(name = "审核状态")
+    private Long pendingStatus;
+    /**
+     * 运单号
+     */
+    @Excel(name = "运单号")
+    private String trackingNumber;
+    /**
+     * 归还方式
+     */
+    @Excel(name = "归还方式")
+    private Long returnMethod;
+    /**
+     * 取阅方式
+     */
+    @Excel(name = "取阅方式")
+    private Long borrowMethod;
+    private String coverUrl;
 
-    public String getCategory() {
-        return category;
+    public Long getBorrowId() {
+        return borrowId;
     }
 
-    public void setCategory(String category) {
-        this.category = category;
+    public void setBorrowId(Long borrowId) {
+        this.borrowId = borrowId;
+    }
+
+    public Long getBookId() {
+        return bookId;
+    }
+
+    public void setBookId(Long bookId) {
+        this.bookId = bookId;
     }
 
     public String getTitle() {
@@ -50,16 +135,29 @@ public class BookBorrowing extends BaseEntity
         this.title = title;
     }
 
-    /** 读者ID */
-    @Excel(name = "读者ID")
-    private Long readerId;
+    public String getCategory() {
+        return category;
+    }
 
-    /** 图书馆ID */
-    @Excel(name = "图书馆ID")
-    private Long libraryId;
+    public void setCategory(String category) {
+        this.category = category;
+    }
 
-    /** 图书馆名称 */
-    private String deptName;
+    public Long getReaderId() {
+        return readerId;
+    }
+
+    public void setReaderId(Long readerId) {
+        this.readerId = readerId;
+    }
+
+    public Long getLibraryId() {
+        return libraryId;
+    }
+
+    public void setLibraryId(Long libraryId) {
+        this.libraryId = libraryId;
+    }
 
     public String getDeptName() {
         return deptName;
@@ -69,82 +167,44 @@ public class BookBorrowing extends BaseEntity
         this.deptName = deptName;
     }
 
-    /** 借出日期 */
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    @Excel(name = "借出日期", width = 30, dateFormat = "yyyy-MM-dd")
-    private Date borrowDate;
-
-    /** 应还日期 */
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    @Excel(name = "应还日期", width = 30, dateFormat = "yyyy-MM-dd")
-    private Date dueDate;
-
-    /** 实际还书日期 */
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    @Excel(name = "实际还书日期", width = 30, dateFormat = "yyyy-MM-dd")
-    private Date returnDate;
-
-    /** 逾期罚款 */
-    @Excel(name = "逾期罚款")
-    private BigDecimal fine;
-
-    /** 借阅备注 */
-    @Excel(name = "借阅备注")
-    private String comments;
-
-
-    /** 借阅状态 */
-    @Excel(name = "借阅状态")
-    private Long status;
-
-    /** 审核状态 */
-    @Excel(name = "审核状态")
-    private Long pendingStatus;
-
-    /** 运单号 */
-    @Excel(name = "运单号")
-    private String trackingNumber;
-
-    /** 归还方式 */
-    @Excel(name = "归还方式")
-    private Long returnMethod;
-
-    /** 取阅方式 */
-    @Excel(name = "取阅方式")
-    private Long borrowMethod;
-
-    public Long getBorrowMethod() {
-        return borrowMethod;
+    public LocalDate getBorrowDate() {
+        return borrowDate;
     }
 
-    public void setBorrowMethod(Long borrowMethod) {
-        this.borrowMethod = borrowMethod;
+    public void setBorrowDate(LocalDate borrowDate) {
+        this.borrowDate = borrowDate;
     }
 
-    public String getTrackingNumber() {
-        return trackingNumber;
+    public LocalDate getDueDate() {
+        return dueDate;
     }
 
-    public void setTrackingNumber(String trackingNumber) {
-        this.trackingNumber = trackingNumber;
+    public void setDueDate(LocalDate dueDate) {
+        this.dueDate = dueDate;
     }
 
-    public Long getReturnMethod() {
-        return returnMethod;
+    public LocalDate getReturnDate() {
+        return returnDate;
     }
 
-    public void setReturnMethod(Long returnMethod) {
-        this.returnMethod = returnMethod;
+    public void setReturnDate(LocalDate returnDate) {
+        this.returnDate = returnDate;
     }
 
-    private String coverUrl;
-
-    public String getCoverUrl() {
-        return coverUrl;
+    public BigDecimal getFine() {
+        return fine;
     }
 
-    public void setCoverUrl(String coverUrl) {
-        this.coverUrl = coverUrl;
+    public void setFine(BigDecimal fine) {
+        this.fine = fine;
+    }
+
+    public String getComments() {
+        return comments;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
     }
 
     public Long getStatus() {
@@ -163,100 +223,59 @@ public class BookBorrowing extends BaseEntity
         this.pendingStatus = pendingStatus;
     }
 
-    public void setBorrowId(Long borrowId)
-    {
-        this.borrowId = borrowId;
+    public String getTrackingNumber() {
+        return trackingNumber;
     }
 
-    public Long getBorrowId() 
-    {
-        return borrowId;
-    }
-    public void setBookId(Long bookId) 
-    {
-        this.bookId = bookId;
+    public void setTrackingNumber(String trackingNumber) {
+        this.trackingNumber = trackingNumber;
     }
 
-    public Long getBookId() 
-    {
-        return bookId;
-    }
-    public void setReaderId(Long readerId) 
-    {
-        this.readerId = readerId;
+    public Long getReturnMethod() {
+        return returnMethod;
     }
 
-    public Long getReaderId() 
-    {
-        return readerId;
-    }
-    public void setLibraryId(Long libraryId) 
-    {
-        this.libraryId = libraryId;
+    public void setReturnMethod(Long returnMethod) {
+        this.returnMethod = returnMethod;
     }
 
-    public Long getLibraryId() 
-    {
-        return libraryId;
-    }
-    public void setBorrowDate(Date borrowDate) 
-    {
-        this.borrowDate = borrowDate;
+    public Long getBorrowMethod() {
+        return borrowMethod;
     }
 
-    public Date getBorrowDate() 
-    {
-        return borrowDate;
-    }
-    public void setDueDate(Date dueDate) 
-    {
-        this.dueDate = dueDate;
+    public void setBorrowMethod(Long borrowMethod) {
+        this.borrowMethod = borrowMethod;
     }
 
-    public Date getDueDate() 
-    {
-        return dueDate;
-    }
-    public void setReturnDate(Date returnDate) 
-    {
-        this.returnDate = returnDate;
+    public String getCoverUrl() {
+        return coverUrl;
     }
 
-    public Date getReturnDate() 
-    {
-        return returnDate;
-    }
-    public void setFine(BigDecimal fine) 
-    {
-        this.fine = fine;
-    }
-
-    public BigDecimal getFine() 
-    {
-        return fine;
-    }
-    public void setComments(String comments) 
-    {
-        this.comments = comments;
-    }
-
-    public String getComments() 
-    {
-        return comments;
+    public void setCoverUrl(String coverUrl) {
+        this.coverUrl = coverUrl;
     }
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
-            .append("borrowId", getBorrowId())
-            .append("bookId", getBookId())
-            .append("readerId", getReaderId())
-            .append("libraryId", getLibraryId())
-            .append("borrowDate", getBorrowDate())
-            .append("dueDate", getDueDate())
-            .append("returnDate", getReturnDate())
-            .append("fine", getFine())
-            .append("comments", getComments())
-            .toString();
+        return "BookBorrowing{" +
+                "borrowId=" + borrowId +
+                ", bookId=" + bookId +
+                ", title='" + title + '\'' +
+                ", category='" + category + '\'' +
+                ", readerId=" + readerId +
+                ", libraryId=" + libraryId +
+                ", deptName='" + deptName + '\'' +
+                ", borrowDate=" + borrowDate +
+                ", dueDate=" + dueDate +
+                ", returnDate=" + returnDate +
+                ", fine=" + fine +
+                ", comments='" + comments + '\'' +
+                ", status=" + status +
+                ", pendingStatus=" + pendingStatus +
+                ", trackingNumber='" + trackingNumber + '\'' +
+                ", returnMethod=" + returnMethod +
+                ", borrowMethod=" + borrowMethod +
+                ", coverUrl='" + coverUrl + '\'' +
+                '}';
     }
 }

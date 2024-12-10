@@ -1,14 +1,20 @@
 package com.ruoyi.borrow.service.impl;
 
+import java.time.LocalDate;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 import com.ruoyi.book.domain.Books;
+import com.ruoyi.book.service.IBooksService;
+import com.ruoyi.common.core.domain.AjaxResult;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ruoyi.borrow.mapper.BookBorrowingMapper;
 import com.ruoyi.borrow.domain.BookBorrowing;
 import com.ruoyi.borrow.service.IBookBorrowingService;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 /**
  * 图书借阅信息Service业务层处理
@@ -17,10 +23,14 @@ import com.ruoyi.borrow.service.IBookBorrowingService;
  * @date 2024-03-12
  */
 @Service
+@Slf4j
 public class BookBorrowingServiceImpl implements IBookBorrowingService
 {
     @Autowired
     private BookBorrowingMapper bookBorrowingMapper;
+
+    @Autowired
+    private IBooksService booksService;
 
     /**
      * 查询图书借阅信息
@@ -152,5 +162,53 @@ public class BookBorrowingServiceImpl implements IBookBorrowingService
     @Override
     public List<BookBorrowing> selectBookBorrowingListByLibraryIdWithCategory(BookBorrowing bookBorrowing) {
         return bookBorrowingMapper.selectBookBorrowingListByLibraryIdWithCategory(bookBorrowing);
+    }
+
+    /**
+     * 处理借阅延期
+     * @param request
+     * @return 响应结果
+     */
+    @Override
+    public AjaxResult handleExtension(BookBorrowing request) {
+        try {
+            Long bookId = request.getBookId();
+            // 先检查图书是否存在
+            Books book = booksService.selectBooksByBookId(bookId);
+            if (book == null) {
+                return AjaxResult.error("图书不存在");
+            }
+            // 检查图书是否已归还
+            if (book.getStatus() == 1) {
+                return AjaxResult.error("图书已归还");
+            }else if (book.getStatus() == 2) {
+                return AjaxResult.error("当前无法完成此操作");
+            }
+            Long borrowId = request.getBorrowId();
+            //检查是否已逾期
+            LocalDate dueDate = request.getDueDate();
+            if (dueDate.isBefore(LocalDate.now())) {
+                return AjaxResult.error("不允许延期，你已经逾期！");
+            }
+            //检查是否已有延期
+            BookBorrowing borrowing = selectBookBorrowingByBorrowId(borrowId);
+            if (borrowing.getComments().equals("延期15天成功")) {
+                return AjaxResult.error("不允许延期，你已经申请过延期！");
+            }
+            LocalDate extensionDate = dueDate.plusDays(15);
+            // 创建并修改借阅记录
+            BookBorrowing bookBorrowing = new BookBorrowing();
+            bookBorrowing.setBookId(bookId);
+            bookBorrowing.setBorrowId(borrowId);
+            bookBorrowing.setDueDate(extensionDate);
+            bookBorrowing.setComments("延期15天成功");
+            updateBookBorrowing(bookBorrowing);
+            return AjaxResult.success("延期成功");
+        } catch (Exception e) {
+            log.info("借阅延期失败，回滚\n错误信息{}", e.getMessage());
+            // 手动设置事务回滚
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return AjaxResult.error("延期失败，请稍后再试");
+        }
     }
 }

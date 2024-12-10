@@ -1,9 +1,11 @@
 package com.ruoyi.rate.service.impl;
 
+import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.ruoyi.RedisObject;
 import com.ruoyi.book.domain.Books;
 import com.ruoyi.book.service.IBooksService;
 import com.ruoyi.rate.domain.BookRatings;
@@ -14,7 +16,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -29,6 +34,9 @@ import static com.ruoyi.RedisConstants.*;
 @Slf4j
 @Service
 public class BookRatingsServiceImpl implements IBookRatingsService {
+    //逻辑过期缓存重建线程池
+    public static final ExecutorService CACHE_THREAD_POOL = Executors.newFixedThreadPool(10);
+
     @Autowired
     private BookRatingsMapper bookRatingsMapper;
 
@@ -54,16 +62,17 @@ public class BookRatingsServiceImpl implements IBookRatingsService {
 
 
     public String getRating(Long bookId) {
-        String key = CACHE_BOOKRATING_KEY + bookId;
         BookRatings queryBookRatings = new BookRatings();
         queryBookRatings.setBookId(bookId);
         List<BookRatings> list = bookRatingsService.selectBookRatingsList(queryBookRatings);
+        if (list.isEmpty()) return null;
         double averageRating = list.stream().mapToDouble(BookRatings::getRating).average().orElse(0.0);
         return String.valueOf((double) Math.round(averageRating * 10) / 10);
     }
 
     /**
      * 查询藏书总体评分
+     * 缓存空值解决缓存穿透
      *
      * @param bookId 藏书ID
      * @return 藏书总体评分
@@ -73,14 +82,86 @@ public class BookRatingsServiceImpl implements IBookRatingsService {
         String key = CACHE_BOOKRATING_KEY + bookId;
         String ratingStr = stringRedisTemplate.opsForValue().get(key);
         if (StrUtil.isNotEmpty(ratingStr)) {
-            return ratingStr;
+            if (CACHE_NULL_PLACEHOLDER.equals(ratingStr)) {
+                return null;
+            } else return ratingStr;
         } else { //Redis未命中
             ratingStr = getRating(bookId);
             //存Redis
-            stringRedisTemplate.opsForValue().set(key, ratingStr, CACHE_BOOKRATING_EX, TimeUnit.MINUTES);
+            if (ratingStr != null) { //查得到
+                stringRedisTemplate.opsForValue().set(key, ratingStr, CACHE_BOOKRATING_EX, TimeUnit.MINUTES);
+                return ratingStr;
+            } else { //查不到
+                stringRedisTemplate.opsForValue().set(key, CACHE_NULL_PLACEHOLDER, CACHE_NULL_EX, TimeUnit.MINUTES);
+                return null;
+            }
+        }
+    }
+
+    /**
+     * 查询藏书总体评分
+     * 逻辑过期解决缓存击穿
+     *
+     * @param bookId 藏书ID
+     * @return 藏书总体评分
+     */
+    @Override
+    public String getAverageRatingWithLogicalExpiration(Long bookId) {
+        String key = CACHE_BOOKRATING_KEY + bookId;
+        String ratingJson = stringRedisTemplate.opsForValue().get(key);
+        if (StrUtil.isEmpty(ratingJson)) {
+            return null;
+        }
+        //检查过期时间
+        //获取评分
+        RedisObject redisObject = JSONUtil.toBean(ratingJson, RedisObject.class);
+        String ratingStr = (String) redisObject.getData();
+        //获取过期时间
+        LocalDateTime exTime = redisObject.getLocalDateTime();
+        if (LocalDateTime.now().isBefore(exTime)) {
+            //没过期
+            return ratingStr;
+        }
+        //过期了，缓存重建
+        String lockKey = LOCK_BOOKRATING_KEY + bookId;
+        boolean tryLock = tryLock(lockKey, LOCK_BOOKRATING_EX);
+        if (tryLock) {
+            String ratingJson2 = stringRedisTemplate.opsForValue().get(key);
+            RedisObject redisObject2 = JSONUtil.toBean(ratingJson2, RedisObject.class);
+            LocalDateTime exTime2 = redisObject2.getLocalDateTime();
+            if (LocalDateTime.now().isBefore(exTime2)) {
+                //二次检查时间
+                unlock(lockKey);
+                return (String) redisObject2.getData();
+            }
+            //调用新线程执行缓存重建
+            CACHE_THREAD_POOL.submit(() -> {
+                //重建缓存
+                try {
+                    RedisObject newredisObject = new RedisObject();
+                    newredisObject.setData(getRating(bookId));
+                    newredisObject.setLocalDateTime(LocalDateTime.now().plusMinutes(30));
+                    stringRedisTemplate.opsForValue().set(key, JSONUtil.toJsonStr(newredisObject));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    unlock(lockKey);
+                }
+            });
         }
         return ratingStr;
     }
+
+
+    public boolean tryLock(String key, Long time) {
+        Boolean result = stringRedisTemplate.opsForValue().setIfAbsent(key, "1", time, TimeUnit.SECONDS);
+        return BooleanUtil.isTrue(result);
+    }
+
+    public void unlock(String key) {
+        stringRedisTemplate.delete(key);
+    }
+
 
     /**
      * 查询藏书评分列表
