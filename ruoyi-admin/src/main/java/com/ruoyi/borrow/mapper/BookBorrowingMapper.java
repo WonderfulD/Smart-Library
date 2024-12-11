@@ -70,7 +70,7 @@ public interface BookBorrowingMapper
      * @param bookBorrowing 包含查询条件的实体，包括图书馆（部门）ID
      * @return 符合条件的图书借阅信息列表
      */
-    List<BookBorrowing> selectBookBorrowingListByDept(BookBorrowing bookBorrowing);
+    public List<BookBorrowing> selectBookBorrowingListByDept(BookBorrowing bookBorrowing);
 
 
     /**
@@ -79,7 +79,7 @@ public interface BookBorrowingMapper
      * @param bookBorrowing 包含查询条件的实体，包括借阅人ID
      * @return 符合条件的图书借阅信息列表
      */
-    List<BookBorrowing> selectBookBorrowingListByReaderId(BookBorrowing bookBorrowing);
+    public List<BookBorrowing> selectBookBorrowingListByReaderId(BookBorrowing bookBorrowing);
 
 
     /**
@@ -88,7 +88,7 @@ public interface BookBorrowingMapper
      * @param date 借阅日期
      * @return 符合条件的会员数
      */
-    Integer countDistinctReaderIdsByDate(@Param("borrowDate") Date date, @Param("libraryId") Long libraryId);
+    public Integer countDistinctReaderIdsByDate(@Param("borrowDate") Date date, @Param("libraryId") Long libraryId);
 
     /**
      * 查询已通过审核未还的书籍借阅列表
@@ -96,8 +96,7 @@ public interface BookBorrowingMapper
      * @param bookBorrowing 包含查询条件的实体，包括节约审核情况
      * @return 符合条件的图书借阅信息列表
      */
-    List<BookBorrowing> selectBookBorrowingByPendingStatusWithNullReturnDate(BookBorrowing bookBorrowing);
-
+    public List<BookBorrowing> selectBookBorrowingByPendingStatusWithNullReturnDate(BookBorrowing bookBorrowing);
 
 
     /**
@@ -106,6 +105,12 @@ public interface BookBorrowingMapper
      * @param bookBorrowing 包含查询条件的实体，包括图书馆Id
      * @return 符合条件的图书借阅信息列表，包括图书种类
      */
-    List<BookBorrowing> selectBookBorrowingListByLibraryIdWithCategory(BookBorrowing bookBorrowing);
+    public List<BookBorrowing> selectBookBorrowingListByLibraryIdWithCategory(BookBorrowing bookBorrowing);
 
+    /**
+     * 根据当前登录管理员所在图书馆ID，查询读者归还待确认的借阅列表
+     * @param bookBorrowing
+     * @return
+     */
+    public List<BookBorrowing> selectBookBorrowingListWithReturnPending(BookBorrowing bookBorrowing);
 }

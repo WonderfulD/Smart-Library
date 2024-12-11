@@ -360,11 +360,6 @@ export default {
             updateBookBorrowing({
               ...this.form,
               pendingStatus: 1 // 设置审核通过状态
-            }).then(response => {
-              // 获取被批准借阅记录的书籍编号
-              const bookId = this.form.bookId;
-              // 更新图书状态为借出
-              return updateBookInfo({ bookId: bookId, status: 0 });
             }).then(() => {
               this.$modal.msgSuccess("已同意");
               this.open = false;

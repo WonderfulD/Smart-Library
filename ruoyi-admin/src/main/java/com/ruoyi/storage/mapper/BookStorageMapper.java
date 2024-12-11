@@ -66,13 +66,14 @@ public interface BookStorageMapper
      *
      * @return 结果
      */
-    public List<Integer> selectAvailableBookIds();
+    public List<Long> selectAvailableBookIds();
 
     /**
      * 获取某图书馆的图书ID列表
      * @param libraryId
      * @return
      */
-    public List<Integer> selectBookIdsByLibraryId(@Param("libraryId") int libraryId);
+    public List<Long> selectBookIdsByLibraryId(@Param("libraryId") Long libraryId);
 
+    public List<Long> selectLibraryIdsByBookId(Long bookId);
 }

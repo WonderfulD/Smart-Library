@@ -64,14 +64,21 @@ public interface IBookStorageService
      * 获取库存大于1的图书ID列表
      * @return 图书id列表
      */
-    public List<Integer> selectAvailableBookIDsList();
+    public List<Long> selectAvailableBookIDsList();
 
     /**
      * 获取某图书馆的图书ID列表
      * @param libraryId 图书馆id
      * @return 图书id列表
      */
-    public List<Integer> selectBookIdsByLibraryId(int libraryId);
+    public List<Long> selectBookIdsByLibraryId(Long libraryId);
 
     public void deleteBookStorageByLibraryIdAndBookIds(Long libraryId, Long[] bookIds);
+
+    /**
+     * 获取某图书的图书馆ID列表
+     * @param bookId 图书id
+     * @return
+     */
+    public List<Long> selectLibraryIdsByBookId(Long bookId);
 }

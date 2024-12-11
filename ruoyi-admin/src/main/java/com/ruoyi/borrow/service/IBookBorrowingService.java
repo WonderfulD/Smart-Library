@@ -112,4 +112,27 @@ public interface IBookBorrowingService
      * @return 响应结果
      */
     public AjaxResult handleExtension(BookBorrowing request);
+
+    /**
+     * 处理图书借阅
+     * @param bookBorrowing
+     * @return
+     */
+    public AjaxResult borrowBook(BookBorrowing bookBorrowing);
+
+    /**
+     * 根据当前登录管理员所在图书馆ID，查询读者归还待确认的借阅列表
+     * @param bookBorrowing
+     * @return
+     */
+    public List<BookBorrowing> selectBookBorrowingListWithReturnPending(BookBorrowing bookBorrowing);
+
+    /**
+     * 处理读者图书归还
+     * @param request 借阅记录
+     * @return AjaxResult 响应结果
+     */
+    public AjaxResult returnBook(BookBorrowing request);
+
+    public AjaxResult confirmReturnBook(BookBorrowing request);
 }

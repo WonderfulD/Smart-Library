@@ -195,7 +195,6 @@ export default {
       })
     },
 
-
     /** 限制选择当天之前的日子 */
     disabledDate(time) {
       return time.getTime() < Date.now();
@@ -206,6 +205,7 @@ export default {
       this.open = false;
       this.reset();
     },
+
     // 表单重置
     reset() {
       this.form = {

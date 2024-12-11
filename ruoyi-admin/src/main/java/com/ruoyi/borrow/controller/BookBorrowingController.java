@@ -63,6 +63,7 @@ public class BookBorrowingController extends BaseController
     @GetMapping("/listWithStatus")
     public TableDataInfo listWithStatus(BookBorrowing bookBorrowing) {
         bookBorrowing.setLibraryId(SecurityUtils.getDeptId());
+        startPageByBorrowDateDesc();
         List<BookBorrowing> list = bookBorrowingService.selectBookBorrowingListByDept(bookBorrowing);
         for (BookBorrowing borrowing : list) {
             borrowing.setStatus((long) getBorrowingStatus(borrowing));
@@ -232,23 +233,9 @@ public class BookBorrowingController extends BaseController
     public TableDataInfo listReturnPendingByDept(BookBorrowing bookBorrowing) {
         startPageByBorrowDateDesc();
         bookBorrowing.setLibraryId(SecurityUtils.getDeptId()); // 设置当前用户所在部门ID
-        bookBorrowing.setReturnMethod(0L);
-        List<BookBorrowing> list = new CopyOnWriteArrayList<>();
-        List<BookBorrowing> list1 = bookBorrowingService.selectBookBorrowingListByDept(bookBorrowing);
-        bookBorrowing.setReturnMethod(1L);
-        List<BookBorrowing> list2 = bookBorrowingService.selectBookBorrowingListByDept(bookBorrowing);
-        list.addAll(list1);
-        list.addAll(list2);
-        for (BookBorrowing borrowing : list) {
-            if (borrowing.getReturnDate() != null) {
-                list.remove(borrowing);
-                continue;
-            }
-            borrowing.setStatus((long) getBorrowingStatus(borrowing));
-        }
+        List<BookBorrowing> list = bookBorrowingService.selectBookBorrowingListWithReturnPending(bookBorrowing);
         return getDataTable(list);
     }
-
 
 
     /**

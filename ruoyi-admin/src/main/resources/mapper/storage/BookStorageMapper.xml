@@ -76,7 +76,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </delete>
 
     <!-- 查询库存合计大于1的书籍ID列表 -->
-    <select id="selectAvailableBookIds" resultType="java.lang.Integer">
+    <select id="selectAvailableBookIds" resultType="java.lang.Long">
         SELECT book_id
         FROM book_storage
         GROUP BY book_id
@@ -84,10 +84,16 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </select>
 
     <!-- 根据 libraryId 查询所有 book_id 列表（去重） -->
-    <select id="selectBookIdsByLibraryId" parameterType="int" resultType="java.lang.Integer">
+    <select id="selectBookIdsByLibraryId" parameterType="Long" resultType="java.lang.Long">
         SELECT DISTINCT book_id
         FROM book_storage
         WHERE library_id = #{libraryId}
     </select>
 
+    <!-- 根据 bookId 查询所有 library_id 列表（去重） -->
+    <select id="selectLibraryIdsByBookId" parameterType="Long" resultType="java.lang.Long">
+        SELECT DISTINCT library_id
+        FROM book_storage
+        WHERE book_id = #{bookId}
+    </select>
 </mapper>

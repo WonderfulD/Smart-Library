@@ -97,16 +97,26 @@ public class BookStorageServiceImpl implements IBookStorageService
      * @return
      */
     @Override
-    public List<Integer> selectAvailableBookIDsList() {
+    public List<Long> selectAvailableBookIDsList() {
         // 通过库存表查询出库存合计大于1的所有book_id
         return bookStorageMapper.selectAvailableBookIds();
     }
 
+    /**
+     * 根据图书馆ID获取图书ID列表
+     * @param libraryId 图书馆id
+     * @return
+     */
     @Override
-    public List<Integer> selectBookIdsByLibraryId(int libraryId) {
+    public List<Long> selectBookIdsByLibraryId(Long libraryId) {
         return bookStorageMapper.selectBookIdsByLibraryId(libraryId);
     }
 
+    /**
+     * 根据图书馆ID和图书ID列表删除库存记录
+     * @param libraryId
+     * @param bookIds
+     */
     @Override
     public void deleteBookStorageByLibraryIdAndBookIds(Long libraryId, Long[] bookIds) {
         for (Long bookId : bookIds) {
@@ -116,5 +126,15 @@ public class BookStorageServiceImpl implements IBookStorageService
             List<BookStorage> bookStorages = selectBookStorageList(bookStorage);
             deleteBookStorageByStorageId(bookStorages.get(0).getStorageId());
         }
+    }
+
+    /**
+     * 获取某图书的图书馆ID列表
+     * @param bookId 图书id
+     * @return
+     */
+    @Override
+    public List<Long> selectLibraryIdsByBookId(Long bookId) {
+        return bookStorageMapper.selectLibraryIdsByBookId(bookId);
     }
 }

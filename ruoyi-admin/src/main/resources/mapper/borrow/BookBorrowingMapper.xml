@@ -250,4 +250,16 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </where>
     </select>
 
+    <select id="selectBookBorrowingListWithReturnPending" parameterType="BookBorrowing" resultMap="BookBorrowingResult">
+        <include refid="selectBookBorrowingJoinBooksVo"/>
+        <where>
+            <if test="libraryId != null">
+                AND bb.library_id = #{libraryId}
+            </if>
+            AND bb.pending_status = 1
+            AND bb.return_method IN (0, 1)
+            AND bb.return_date IS NULL
+        </where>
+    </select>
+
 </mapper>

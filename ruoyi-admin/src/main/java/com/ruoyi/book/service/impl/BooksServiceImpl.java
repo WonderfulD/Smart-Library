@@ -116,7 +116,7 @@ public class BooksServiceImpl implements IBooksService
     }
 
     @Override
-    public List<Books> selectAvailableBooksList(List<Integer> availableBookIds) {
+    public List<Books> selectAvailableBooksList(List<Long> availableBookIds) {
         if (availableBookIds == null || availableBookIds.isEmpty()) {
             // 若没有满足条件的图书ID，则返回空列表
             return Collections.emptyList();

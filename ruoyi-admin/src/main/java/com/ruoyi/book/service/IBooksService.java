@@ -67,7 +67,7 @@ public interface IBooksService
      */
     public List<Books> selectBooksListByLibrary(Books books);
 
-    public List<Books> selectAvailableBooksList(List<Integer> availableBookIds);
+    public List<Books> selectAvailableBooksList(List<Long> availableBookIds);
 
     /**
      * 新增图书，插入Books表和book_storage表

@@ -69,7 +69,7 @@ public interface BooksMapper
      * @param ids
      * @return
      */
-    public List<Books> selectBooksByIds(List<Integer> ids);
+    public List<Books> selectBooksByIds(List<Long> ids);
 
 
 }

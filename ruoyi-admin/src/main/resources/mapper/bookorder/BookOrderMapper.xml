@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.bookorder.mapper.BookOrderMapper">
+
+    <resultMap type="BookOrder" id="BookOrderResult">
+        <result property="orderId"    column="order_id"    />
+        <result property="bookId"    column="book_id"    />
+        <result property="libraryId"    column="library_id"    />
+        <result property="amount"    column="amount"    />
+        <result property="orderDate"    column="order_date"    />
+    </resultMap>
+
+    <sql id="selectBookOrderVo">
+        select order_id, book_id, library_id, amount, order_date from book_order
+    </sql>
+
+    <select id="selectBookOrderList" parameterType="BookOrder" resultMap="BookOrderResult">
+        <include refid="selectBookOrderVo"/>
+        <where>
+            <if test="orderId != null "> and order_id = #{orderId}</if>
+            <if test="bookId != null "> and book_id = #{bookId}</if>
+            <if test="libraryId != null "> and library_id = #{libraryId}</if>
+            <if test="amount != null "> and amount = #{amount}</if>
+            <if test="orderDate != null "> and order_date = #{orderDate}</if>
+        </where>
+    </select>
+
+    <select id="selectBookOrderByOrderId" parameterType="Long" resultMap="BookOrderResult">
+        <include refid="selectBookOrderVo"/>
+        where order_id = #{orderId}
+    </select>
+
+    <insert id="insertBookOrder" parameterType="BookOrder" useGeneratedKeys="true" keyProperty="orderId">
+        insert into book_order
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="bookId != null">book_id,</if>
+            <if test="libraryId != null">library_id,</if>
+            <if test="amount != null">amount,</if>
+            <if test="orderDate != null">order_date,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="bookId != null">#{bookId},</if>
+            <if test="libraryId != null">#{libraryId},</if>
+            <if test="amount != null">#{amount},</if>
+            <if test="orderDate != null">#{orderDate},</if>
+         </trim>
+    </insert>
+
+    <update id="updateBookOrder" parameterType="BookOrder">
+        update book_order
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="bookId != null">book_id = #{bookId},</if>
+            <if test="libraryId != null">library_id = #{libraryId},</if>
+            <if test="amount != null">amount = #{amount},</if>
+            <if test="orderDate != null">order_date = #{orderDate},</if>
+        </trim>
+        where order_id = #{orderId}
+    </update>
+
+    <delete id="deleteBookOrderByOrderId" parameterType="Long">
+        delete from book_order where order_id = #{orderId}
+    </delete>
+
+    <delete id="deleteBookOrderByOrderIds" parameterType="String">
+        delete from book_order where order_id in
+        <foreach item="orderId" collection="array" open="(" separator="," close=")">
+            #{orderId}
+        </foreach>
+    </delete>
+
+    <!-- 计算订购数量总和 -->
+    <select id="selectTotalAmountByLibraryIdAndDate" resultType="Integer">
+        SELECT SUM(amount) AS totalAmount
+        FROM book_order
+        WHERE library_id = #{libraryId}
+          AND order_date &lt;= #{specificDay}
+    </select>
+</mapper>
