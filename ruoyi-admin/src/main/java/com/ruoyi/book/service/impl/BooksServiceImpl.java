@@ -5,6 +5,8 @@ import com.ruoyi.book.domain.Books;
 import com.ruoyi.book.domain.BooksBO;
 import com.ruoyi.book.mapper.BooksMapper;
 import com.ruoyi.book.service.IBooksService;
+import com.ruoyi.bookorder.domain.BookOrder;
+import com.ruoyi.bookorder.service.IBookOrderService;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.storage.domain.BookStorage;
@@ -34,6 +36,9 @@ public class BooksServiceImpl implements IBooksService
 
     @Autowired
     private IBookStorageService bookStorageService;
+
+    @Autowired
+    private IBookOrderService bookOrderService;
 
     /**
      * 查询图书副本信息
@@ -108,21 +113,18 @@ public class BooksServiceImpl implements IBooksService
     }
 
     /**
-     * 根据图书馆ID查询图书副本信息列表
+     * 根据图书ID列表查询图书列表
+     * @param bookIds 图书ID列表
+     * @return 图书列表
      */
     @Override
-    public List<Books> selectBooksListByLibrary(Books books) {
-        return booksMapper.selectBooksListByLibrary(books);
-    }
-
-    @Override
-    public List<Books> selectAvailableBooksList(List<Long> availableBookIds) {
-        if (availableBookIds == null || availableBookIds.isEmpty()) {
+    public List<Books> selectBooksListByIds(List<Long> bookIds) {
+        if (bookIds == null || bookIds.isEmpty()) {
             // 若没有满足条件的图书ID，则返回空列表
             return Collections.emptyList();
         }
         // 通过查询得到的book_id列表，从图书表中获取对应的图书信息
-        List<Books> availableBooks = booksMapper.selectBooksByIds(availableBookIds);
+        List<Books> availableBooks = booksMapper.selectBooksByIds(bookIds);
         // 返回获取到的图书列表
         return availableBooks;
     }
@@ -145,19 +147,26 @@ public class BooksServiceImpl implements IBooksService
         Long libraryId = SecurityUtils.getDeptId();
         Books books1 = BeanUtil.copyProperties(booksBO, Books.class);
         if (existBooksList.isEmpty()) {
-            //没有这本书
-            //插入该书
-            books1.setLibraryId(libraryId);
+            //图书表中没有这本书,插入该书至图书表
             insertBooks(books1);
         }
         //图书表中有该书
+        Long bookId = books1.getBookId();
+        Long amount = booksBO.getAmount();
+        //插入订购记录至图书订购表
+        BookOrder bookOrder = new BookOrder();
+        bookOrder.setBookId(bookId);
+        bookOrder.setLibraryId(libraryId);
+        bookOrder.setAmount(amount);
+        bookOrder.setOrderDate(LocalDate.now());
+        bookOrderService.insertBookOrder(bookOrder);
+
         //判断该图书馆之前是否有这本书
         BookStorage bookStorage = new BookStorage();
-        Long bookId = books1.getBookId();
         bookStorage.setBookId(bookId);
         bookStorage.setLibraryId(libraryId);
         List<BookStorage> existBookStorages = bookStorageService.selectBookStorageList(bookStorage);
-        Long amount = booksBO.getAmount();
+
         if (existBookStorages.isEmpty()) {
             //该图书馆之前没有这本书
             BookStorage insertStorage = new BookStorage();
@@ -181,10 +190,15 @@ public class BooksServiceImpl implements IBooksService
     @Transactional(rollbackFor = Exception.class)
     public AjaxResult removeBooks(Long[] bookIds) {
         try {
-            //移除库存表中图书馆id+图书id匹配的记录
+            //移除图书表中记录
             deleteBooksByBookIds(bookIds);
+
             Long libraryId = SecurityUtils.getDeptId();
+            //移除库存表中图书馆id+图书id匹配的记录
             bookStorageService.deleteBookStorageByLibraryIdAndBookIds(libraryId, bookIds);
+
+            //移除订购表中记录
+            bookOrderService.deleteBookOrdersByLibraryIdAndBookIds(libraryId, bookIds);
         } catch (Exception e) {
             // 记录异常日志
             log.info("删除图书失败，回滚\n错误信息{}", e.getMessage());

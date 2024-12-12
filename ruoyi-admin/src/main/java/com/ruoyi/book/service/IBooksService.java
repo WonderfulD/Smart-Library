@@ -63,16 +63,21 @@ public interface IBooksService
     public int deleteBooksByBookId(Long bookId);
 
     /**
-     * 根据图书馆ID查询图书副本信息列表
+     * 根据图书ID列表查询图书列表
+     * @param bookIds 图书ID列表
+     * @return 图书列表
      */
-    public List<Books> selectBooksListByLibrary(Books books);
-
-    public List<Books> selectAvailableBooksList(List<Long> availableBookIds);
+    public List<Books> selectBooksListByIds(List<Long> bookIds);
 
     /**
      * 新增图书，插入Books表和book_storage表
      */
     public AjaxResult addBooks(BooksBO booksBO);
 
+    /**
+     * 删除图书,同步修改图书表和库存表
+     * @param bookIds
+     * @return
+     */
     public AjaxResult removeBooks(Long[] bookIds);
 }

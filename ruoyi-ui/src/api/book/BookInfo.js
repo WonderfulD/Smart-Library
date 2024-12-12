@@ -52,6 +52,14 @@ export function listBookInfoByLibraryId(query) {
   })
 }
 
+//根据当前登录管理员所在图书馆id（部门id）查询总藏书量
+export function getTotalBooksCountByLibraryId() {
+  return request({
+    url: '/book/BookInfo/totalBooksCount',
+    method: 'get',
+  })
+}
+
 // 根据提供的借阅信息借阅图书
 export function borrowBook(data) {
   return request({

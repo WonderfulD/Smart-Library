@@ -11,6 +11,7 @@ import com.ruoyi.book.service.IBooksService;
 import com.ruoyi.rate.domain.BookRatings;
 import com.ruoyi.rate.mapper.BookRatingsMapper;
 import com.ruoyi.rate.service.IBookRatingsService;
+import com.ruoyi.storage.service.IBookStorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -48,6 +49,9 @@ public class BookRatingsServiceImpl implements IBookRatingsService {
 
     @Autowired
     private IBooksService booksService;
+
+    @Autowired
+    private IBookStorageService bookStorageService;
 
     /**
      * 查询藏书评分
@@ -238,35 +242,65 @@ public class BookRatingsServiceImpl implements IBookRatingsService {
 
 
     /**
+     * TODO
+     * 尚未测试
      * 根据图书馆Id查询藏书总体评分列表
      *
-     * @param libraryId 图书馆ID
-     * @return
+     * @param libraryId 图书馆ID，若为null则查询所有图书
+     * @return 藏书总体评分列表
      */
     @Override
     public List<Map<String, Object>> getAverageRatingListForBooks(Long libraryId) {
-        String key = CACHE_LIBRARY_BOOKRATING_KEY + libraryId;
+        // 根据libraryId生成缓存键，若libraryId为null，则使用特定标识符
+        String key = (libraryId != null)
+                ? CACHE_LIBRARY_BOOKRATING_KEY + libraryId
+                : CACHE_LIBRARY_BOOKRATING_KEY + "ALL";
+
+        // 从Redis缓存中获取评分数据
         String ratingStr = stringRedisTemplate.opsForValue().get(key);
+
+        // 如果缓存中不存在数据，则进行数据库查询和处理
         if (!StrUtil.isNotEmpty(ratingStr)) {
+            // 获取所有评分记录
             List<BookRatings> allRatings = selectBookRatingsList(new BookRatings());
 
-            Set<Long> bookIds = allRatings.stream().map(BookRatings::getBookId).collect(Collectors.toSet());
+            // 提取评分记录中所有图书ID
+            Set<Long> bookIds = allRatings.stream()
+                    .map(BookRatings::getBookId)
+                    .collect(Collectors.toSet());
+
+            List<Long> filteredBookIds;
+
+            if (libraryId != null) {
+                // 获取指定图书馆的图书ID列表（已去重）
+                List<Long> bookIdsByLibraryId = bookStorageService.selectBookIdsByLibraryId(libraryId);
+                // 将List转换为Set以提升查找效率
+                Set<Long> bookIdsByLibraryIdSet = new HashSet<>(bookIdsByLibraryId);
+                // 过滤出属于指定图书馆的图书ID
+                filteredBookIds = bookIds.stream()
+                        .filter(bookIdsByLibraryIdSet::contains)
+                        .collect(Collectors.toList());
+            } else {
+                // 当libraryId为null时，使用所有图书ID
+                filteredBookIds = new ArrayList<>(bookIds);
+            }
 
             List<Map<String, Object>> responseList = new ArrayList<>();
 
-            for (Long bookId : bookIds) {
+            for (Long bookId : filteredBookIds) {
+                // 查询当前图书的所有评分记录
                 BookRatings queryBookRatings = new BookRatings();
                 queryBookRatings.setBookId(bookId);
                 List<BookRatings> list = selectBookRatingsList(queryBookRatings);
-                double averageRating = list.stream().mapToDouble(BookRatings::getRating).average().orElse(0.0);
+
+                // 计算平均评分
+                double averageRating = list.stream()
+                        .mapToDouble(BookRatings::getRating)
+                        .average()
+                        .orElse(0.0);
 
                 // 获取图书详细信息
                 Books bookInfo = booksService.selectBooksByBookId(bookId);
-
-                // 创建一个包含图书详细信息和平均评分的Map
-                if (libraryId != null && !Objects.equals(bookInfo.getLibraryId(), libraryId)) {
-                    continue;
-                }
 
                 // 创建一个包含图书详细信息和平均评分的Map
                 Map<String, Object> bookDetails = new HashMap<>();
@@ -288,16 +322,28 @@ public class BookRatingsServiceImpl implements IBookRatingsService {
                 responseList.add(bookDetails);
             }
 
-            // 在返回之前对responseList按照averageRating从大到小进行排序
-            responseList.sort((map1, map2) -> Double.compare((double) map2.get("averageRating"), (double) map1.get("averageRating")));
+            // 按照averageRating从大到小排序
+            responseList.sort((map1, map2) -> Double.compare(
+                    (double) map2.get("averageRating"),
+                    (double) map1.get("averageRating")
+            ));
 
+            // 将结果转换为JSON字符串
             ratingStr = JSONUtil.toJsonStr(responseList);
 
-            //存Redis
-            stringRedisTemplate.opsForValue().set(key, ratingStr, CACHE_BOOKRATING_EX, TimeUnit.MINUTES);
+            // 存入Redis缓存，设置过期时间
+            stringRedisTemplate.opsForValue().set(
+                    key,
+                    ratingStr,
+                    CACHE_BOOKRATING_EX,
+                    TimeUnit.MINUTES
+            );
         }
+
+        // 将JSON字符串解析为List<Map<String, Object>>并返回
         return parseToListOfMaps(ratingStr);
     }
+
 
     /**
      * 删除藏书评分信息

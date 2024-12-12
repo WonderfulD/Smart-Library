@@ -103,4 +103,15 @@ public class BookOrderServiceImpl implements IBookOrderService
     public Integer selectTotalAmountByLibraryIdAndDate(Long libraryId, LocalDate specificDay) {
         return bookOrderMapper.selectTotalAmountByLibraryIdAndDate(libraryId, specificDay);
     }
+
+    /**
+     * 删除指定图书馆和图书ID列表的订购信息
+     *
+     * @param libraryId 图书馆ID
+     * @param bookIds 图书ID列表
+     */
+    @Override
+    public void deleteBookOrdersByLibraryIdAndBookIds(Long libraryId, Long[] bookIds) {
+        bookOrderMapper.deleteBookOrdersByLibraryIdAndBookIds(libraryId, bookIds);
+    }
 }

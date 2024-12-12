@@ -69,4 +69,12 @@ public interface IBookOrderService
      * @return 订购数量总和
      */
     public Integer selectTotalAmountByLibraryIdAndDate(Long libraryId, LocalDate specificDay);
+
+    /**
+     * 删除指定图书馆和图书ID列表的订购信息
+     *
+     * @param libraryId 图书馆ID
+     * @param bookIds 图书ID列表
+     */
+    public void deleteBookOrdersByLibraryIdAndBookIds(Long libraryId, Long[] bookIds);
 }

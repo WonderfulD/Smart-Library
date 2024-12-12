@@ -21,18 +21,13 @@ import com.ruoyi.storage.service.IBookStorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
-import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.ruoyi.borrow.controller.BookBorrowingController.getBorrowingStatus;
 import static com.ruoyi.prediction.Prediction.predictNextWeek;
 
 /**
@@ -63,7 +58,7 @@ public class BooksController extends BaseController
     private IBookOrderService bookOrderService;
 
     /**
-     * 查询图书副本信息列表
+     * 查询可被借阅的图书副本信息列表
      */
 //    @PreAuthorize("@ss.hasPermi('book:BookInfo:list')")
     @GetMapping("/list")
@@ -71,7 +66,7 @@ public class BooksController extends BaseController
     {
         List<Long> availableBookIDsList = bookStorageService.selectAvailableBookIDsList();
         startPage();
-        List<Books> availableBooksList = booksService.selectAvailableBooksList(availableBookIDsList);
+        List<Books> availableBooksList = booksService.selectBooksListByIds(availableBookIDsList);
         return getDataTable(availableBooksList);
     }
 
@@ -84,7 +79,7 @@ public class BooksController extends BaseController
     {
         List<Long> bookIdsByLibraryId = bookStorageService.selectBookIdsByLibraryId(SecurityUtils.getDeptId());
         startPage();
-        List<Books> BooksList = booksService.selectAvailableBooksList(bookIdsByLibraryId);
+        List<Books> BooksList = booksService.selectBooksListByIds(bookIdsByLibraryId);
         return getDataTable(BooksList);
     }
 
@@ -95,17 +90,16 @@ public class BooksController extends BaseController
     public AjaxResult getCategoryDistribution() {
         try {
             // 获取当前图书馆的所有图书信息
-            Books books = new Books();
-            books.setLibraryId(SecurityUtils.getDeptId());
-            List<Books> bookList = booksService.selectBooksListByLibrary(books);
-
+            Long libraryId = SecurityUtils.getDeptId();
+            List<Long> bookIds = bookStorageService.selectBookIdsByLibraryId(libraryId);
+            List<Books> bookList = booksService.selectBooksListByIds(bookIds);
             // 统计每个类别的图书数量
             Map<String, Integer> categoryCount = new HashMap<>();
             for (Books book : bookList) {
                 // 获取每本图书的详细信息
                 Books bookInfo = booksService.selectBooksByBookId(book.getBookId());
                 String category = bookInfo.getCategory();
-
+                if (category == null) continue;
                 // 更新统计信息
                 categoryCount.put(category, categoryCount.getOrDefault(category, 0) + 1);
             }
@@ -117,6 +111,15 @@ public class BooksController extends BaseController
         }
     }
 
+    /**
+     * 根据图书馆ID查询总藏书量
+     * @return
+     */
+    @GetMapping("/totalBooksCount")
+    public AjaxResult getTotalBooksCountByLibraryId() {
+        Integer count = bookOrderService.selectTotalAmountByLibraryIdAndDate(SecurityUtils.getDeptId(), LocalDate.now());
+        return AjaxResult.success(count);
+    }
 
     /**
      * 根据读者ID查询读者借阅图书类别分布
@@ -265,6 +268,41 @@ public class BooksController extends BaseController
     }
 
     /**
+     * 查询所有图书馆图书借阅量列表
+     */
+    @GetMapping("/listBorrowsList")
+    public AjaxResult listBorrowsList() {
+        BookBorrowing bookBorrowing = new BookBorrowing();
+        List<BookBorrowing> bookBorrowingList = bookBorrowingService.selectBookBorrowingListByDept(bookBorrowing);
+
+        // 使用Map存储借阅次数
+        Map<Long, Integer> borrowCounts = new HashMap<>();
+        for (BookBorrowing borrowing : bookBorrowingList) {
+            borrowCounts.put(borrowing.getBookId(), borrowCounts.getOrDefault(borrowing.getBookId(), 0) + 1);
+        }
+
+        // 使用List存储最终结果，每个元素包含图书详细信息和借阅次数
+        List<Map<String, Object>> resultList = new ArrayList<>();
+        for (Map.Entry<Long, Integer> entry : borrowCounts.entrySet()) {
+            Long bookId = entry.getKey();
+            Books bookInfo = booksService.selectBooksByBookId(bookId);
+
+            // 创建一个包含图书详细信息和借阅次数的Map
+            Map<String, Object> bookDetails = new HashMap<>();
+            bookDetails.put("bookId", bookId);
+            bookDetails.put("title", bookInfo.getTitle());
+            bookDetails.put("coverUrl", bookInfo.getCoverUrl());
+            bookDetails.put("borrowCount", entry.getValue());
+
+            resultList.add(bookDetails);
+        }
+
+        // 对resultList按照borrowCount倒序排序
+        resultList.sort((map1, map2) -> Integer.compare((int)map2.get("borrowCount"), (int)map1.get("borrowCount")));
+        return AjaxResult.success(resultList);
+    }
+
+    /**
      * 根据读者id获取推荐图书列表
      */
     @GetMapping("/recommendations")
@@ -312,81 +350,6 @@ public class BooksController extends BaseController
 
 
     /**
-     * 查询所有图书馆图书借阅量列表
-     */
-    @GetMapping("/listBorrowsList")
-    public AjaxResult listBorrowsList() {
-        BookBorrowing bookBorrowing = new BookBorrowing();
-        List<BookBorrowing> bookBorrowingList = bookBorrowingService.selectBookBorrowingListByDept(bookBorrowing);
-
-        // 使用Map存储借阅次数
-        Map<Long, Integer> borrowCounts = new HashMap<>();
-        for (BookBorrowing borrowing : bookBorrowingList) {
-            borrowCounts.put(borrowing.getBookId(), borrowCounts.getOrDefault(borrowing.getBookId(), 0) + 1);
-        }
-
-        // 使用List存储最终结果，每个元素包含图书详细信息和借阅次数
-        List<Map<String, Object>> resultList = new ArrayList<>();
-        for (Map.Entry<Long, Integer> entry : borrowCounts.entrySet()) {
-            Long bookId = entry.getKey();
-            Books bookInfo = booksService.selectBooksByBookId(bookId);
-
-            // 创建一个包含图书详细信息和借阅次数的Map
-            Map<String, Object> bookDetails = new HashMap<>();
-            bookDetails.put("bookId", bookId);
-            bookDetails.put("title", bookInfo.getTitle());
-            bookDetails.put("coverUrl", bookInfo.getCoverUrl());
-            bookDetails.put("borrowCount", entry.getValue());
-
-            resultList.add(bookDetails);
-        }
-
-        // 对resultList按照borrowCount倒序排序
-        resultList.sort((map1, map2) -> Integer.compare((int)map2.get("borrowCount"), (int)map1.get("borrowCount")));
-        return AjaxResult.success(resultList);
-    }
-
-
-
-    /**
-     * 预估未来七天的借阅量
-     */
-    public List<Integer> estimateFutureBorrowCounts(List<Integer> recentBorrowsCounts) {
-        List<Integer> estimatedBorrowsCount = new ArrayList<>();
-
-        // 用最后一天的借阅量作为基准开始预估
-        int lastDayCount = recentBorrowsCounts.get(recentBorrowsCounts.size() - 1);
-
-        // 用于跟踪连续相同数字的计数器
-        int sameCount = 1; // 至少有一个（最后一个日子的计数）
-
-        for (int i = 0; i < 7; i++) {
-            // 基于上一天预估下一天的借阅量
-            int estimate = lastDayCount; // 这里可以加入复杂的逻辑来改进预估
-
-            // 如果前两个预估值与当前相同，增加10%
-            if (i >= 2 && estimatedBorrowsCount.get(i-1).equals(estimatedBorrowsCount.get(i-2)) && sameCount >= 2) {
-                estimate = (int) Math.round(estimate * 1.1); // 增加10%
-                estimate = Math.max(estimate, lastDayCount + 1); // 确保至少增加1
-                sameCount = 0; // 重置连续相同数字的计数器
-            }
-
-            estimatedBorrowsCount.add(estimate);
-            lastDayCount = estimate;
-
-            // 检查连续相同值的情况
-            if (i > 0 && estimate == estimatedBorrowsCount.get(i - 1)) {
-                sameCount++; // 增加连续相同计数
-            } else {
-                sameCount = 1; // 重置计数
-            }
-        }
-
-        return estimatedBorrowsCount;
-    }
-
-
-    /**
      * 根据借阅人ID查询图书副本信息列表
      */
 //    @PreAuthorize("@ss.hasPermi('book:BookInfo:list')")
@@ -412,7 +375,7 @@ public class BooksController extends BaseController
         bookBorrowing.setPendingStatus(1L);
         List<BookBorrowing> list = bookBorrowingService.selectBookBorrowingByPendingStatusWithNullReturnDate(bookBorrowing);
         for (BookBorrowing borrowing : list) {
-            borrowing.setStatus((long) getBorrowingStatus(borrowing));
+            borrowing.setStatus((long) BorrowUtil.getBorrowingStatus(borrowing));
         }
         return getDataTable(list);
     }
@@ -427,7 +390,7 @@ public class BooksController extends BaseController
     public void export(HttpServletResponse response, Books books)
     {
         List<Long> availableBookIDsList = bookStorageService.selectAvailableBookIDsList();
-        List<Books> availableBooksList = booksService.selectAvailableBooksList(availableBookIDsList);
+        List<Books> availableBooksList = booksService.selectBooksListByIds(availableBookIDsList);
         ExcelUtil<Books> util = new ExcelUtil<Books>(Books.class);
         util.exportExcel(response, availableBooksList, "图书信息数据");
     }

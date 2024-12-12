@@ -71,4 +71,12 @@ public interface BookOrderMapper
      */
     public Integer selectTotalAmountByLibraryIdAndDate(@Param("libraryId") Long libraryId,
                                                 @Param("specificDay") LocalDate specificDay);
+
+    /**
+     * 删除指定图书馆和图书ID列表的订购信息
+     *
+     * @param libraryId 图书馆ID
+     * @param bookIds 图书ID列表
+     */
+    public void deleteBookOrdersByLibraryIdAndBookIds(@Param("libraryId") Long libraryId, @Param("bookIds") Long[] bookIds);
 }

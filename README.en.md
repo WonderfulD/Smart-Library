@@ -1,5 +1,7 @@
 # Jsjds2024
 
+[Try me](http://47.93.44.153/)
+
 #### Introduction
 - 2024(17th)Chinese Collegiate Computing Competition
 - Project Name: Smart Library(The Design and Implementation of a Smart Library System Based on SpringBoot and Vue)
@@ -68,28 +70,3 @@
    ```java
    "/prod-api" + FileUploadUtils.upload(filePath, file);
    ```
-
-#### Known Issues
-- ~~When a reader fails to borrow a book, the transaction does not exhibit atomicity. The `status` field in the `Books` table shows `0` (borrowed), but no new record is added to the `BookBorrowing` table.~~
-
-#### Optimizations
-- ~~New Page~~
-    - ~~Analysis Page~~
-        - ~~Displays the highest-rated book (name and rating) and the most-read book (name and read count) in each category, along with each category's average rating and total read count.~~
-    - ~~Reader Response Page~~
-        - ~~Displays reader contact information~~
-        - ~~Allows administrators to respond to readers~~
-
-- Reader Borrowing Optimization
-    - When multiple libraries have the same book, books with the same ISBN will be folded and displayed as one entry. The backend will handle which library's book is borrowed.
-
-- ~~Reader Return Optimization~~
-    - ~~Prioritize displaying books not yet returned~~
-
-- ~~New Feature for `Inter-Library Alliance`:~~
-    - ~~The "Contact Library" button for readers will add the contact information to the library administrator's response page.~~
-    - ~~The administrator's response will be displayed on the reader's `Inter-Library Alliance` page.~~
-
-- ~~`Dashboard` Optimization (__urgent__)~~
-    - ~~The `panelGroup` component should show the rating as the library's rating given by readers.~~
-    - ~~The current `Radar Chart` data is simulated and needs to be fetched from the backend.~~

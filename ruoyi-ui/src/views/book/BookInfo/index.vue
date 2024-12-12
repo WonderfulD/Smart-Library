@@ -195,7 +195,8 @@
         <el-form-item label="版次" prop="edition">
           <el-input v-model="form.edition" placeholder="请输入版次" />
         </el-form-item>
-        <el-form-item label="数量" prop="amount">
+        <!-- 只有在新增时才显示数量 -->
+        <el-form-item v-if="isAdd" label="数量" prop="amount">
           <el-input v-model="form.amount" placeholder="请输入数量" />
         </el-form-item>
         <!-- 文件上传组件 -->
@@ -259,6 +260,7 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
+      isAdd: false, // 新增或修改的标识
       // 修改上传地址为多文件上传
       uploadFileUrl: process.env.VUE_APP_BASE_API + "/common/uploads",
       headers: {
@@ -286,12 +288,37 @@ export default {
         author: [
           { required: true, message: "作者不能为空", trigger: "blur" }
         ],
-        amount: [
-          { required: true, message: "数量不能为空", trigger: "blur" }
-        ],
         isbn: [
           { required: true, message: "国际标准书号不能为空", trigger: "blur" }
         ],
+        publisher: [
+          { required: true, message: "出版社不能为空", trigger: "blur" }
+        ],
+        publishDate: [
+          { required: true, message: "出版日期不能为空", trigger: "blur" }
+        ],
+        category: [
+          { required: true, message: "图书分类不能为空", trigger: "blur" }
+        ],
+        description: [
+          { required: true, message: "图书描述不能为空", trigger: "blur" }
+        ],
+        summary: [
+          { required: true, message: "简介不能为空", trigger: "blur" }
+        ],
+        language: [
+          { required: true, message: "图书语言不能为空", trigger: "blur" }
+        ],
+        pages: [
+          { required: true, message: "页数不能为空", trigger: "blur" }
+        ],
+        edition: [
+          { required: true, message: "版次不能为空", trigger: "blur" }
+        ],
+        amount: [
+          { required: true, message: "数量不能为空", trigger: "blur" }
+        ],
+
       }
     };
   },
@@ -345,7 +372,7 @@ export default {
       this.resetForm("queryForm");
       this.handleQuery();
     },
-    // 多选框选中数据
+    /** 多选框选中数据 */
     handleSelectionChange(selection) {
       this.ids = selection.map(item => item.bookId)
       this.single = selection.length!==1
@@ -356,6 +383,7 @@ export default {
       this.reset();
       this.open = true;
       this.title = "添加图书信息";
+      this.isAdd = true; // 标记为新增
       this.formKey++; // 改变key值来重置表单状态
       this.uploadKey++; // 如果需要单独重置上传组件
     },
@@ -367,6 +395,7 @@ export default {
         this.form = response.data;
         this.open = true;
         this.title = "修改图书副本信息";
+        this.isAdd = false; // 标记为修改
         this.formKey++; // 改变key值来重置表单状态
         this.uploadKey++; // 如果需要单独重置上传组件
       });

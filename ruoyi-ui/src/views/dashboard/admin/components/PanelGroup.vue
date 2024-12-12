@@ -57,7 +57,7 @@
 
 <script>
 import CountTo from 'vue-count-to'
-import {listBookInfoByLibraryId} from "@/api/book/BookInfo";
+import {getTotalBooksCountByLibraryId, listBookInfoByLibraryId} from "@/api/book/BookInfo";
 import {listBookBorrowingByDept} from "@/api/borrow/BookBorrowing";
 import {getTotalMembers} from "@/api/remote-search";
 import {listBorrowRating, listRatingsByLibraryId} from "@/api/borrowrating/BorrowRating";
@@ -75,8 +75,8 @@ export default {
       this.$emit('handleSetLineChartData', type)
     },
     getCounts() {
-      listBookInfoByLibraryId().then(response => {
-        this.booksCount = response.total;
+      getTotalBooksCountByLibraryId().then(response => {
+        this.booksCount = response.data;
       })
       listBookBorrowingByDept().then(response => {
         this.borrowsCount = response.total;

@@ -6,7 +6,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <resultMap type="Books" id="BooksResult">
         <result property="bookId"    column="book_id"    />
-        <result property="libraryId"    column="library_id"    />
         <result property="title"    column="title"    />
         <result property="author"    column="author"    />
         <result property="isbn"    column="isbn"    />
@@ -23,7 +22,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectBooksVo">
-        select book_id, library_id, title, author, isbn, publisher, publish_date, category, description, language, pages, cover_url, edition, status, summary from Books
+        select book_id, title, author, isbn, publisher, publish_date, category, description, language, pages, cover_url, edition, status, summary from Books
     </sql>
 
     <select id="selectBooksList" parameterType="Books" resultMap="BooksResult">
@@ -47,7 +46,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <insert id="insertBooks" parameterType="Books" useGeneratedKeys="true" keyProperty="bookId">
         insert into Books
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            <if test="libraryId != null">library_id,</if>
             <if test="title != null and title != ''">title,</if>
             <if test="author != null and author != ''">author,</if>
             <if test="isbn != null">isbn,</if>
@@ -63,7 +61,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="summary != null">summary,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
-            <if test="libraryId != null">#{libraryId},</if>
             <if test="title != null and title != ''">#{title},</if>
             <if test="author != null and author != ''">#{author},</if>
             <if test="isbn != null">#{isbn},</if>
@@ -83,7 +80,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <update id="updateBooks" parameterType="Books">
         update Books
         <trim prefix="SET" suffixOverrides=",">
-            <if test="libraryId != null">library_id = #{libraryId},</if>
             <if test="title != null and title != ''">title = #{title},</if>
             <if test="author != null and author != ''">author = #{author},</if>
             <if test="isbn != null">isbn = #{isbn},</if>
@@ -112,39 +108,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </foreach>
     </delete>
 
-    <select id="selectBooksListByLibrary" parameterType="Books" resultMap="BooksResult">
-        <include refid="selectBooksVo"/>
-        <where>
-            <if test="libraryId != null">
-                AND library_id = #{libraryId}
-            </if>
-            <if test="bookId != null">
-                AND book_id = #{bookId}
-            </if>
-            <if test="title != null and title != ''">
-                AND title = #{title}
-            </if>
-            <if test="author != null and author != ''">
-                AND author = #{author}
-            </if>
-            <if test="isbn != null and isbn != ''">
-                AND isbn = #{isbn}
-            </if>
-            <if test="publisher != null and publisher != ''">
-                AND publisher = #{publisher}
-            </if>
-            <if test="category != null and category != ''">
-                AND category = #{category}
-            </if>
-            <if test="status != null">
-                AND status = #{status}
-            </if>
-            <if test="summary != null">
-                AND summary = #{summary}
-            </if>
-        </where>
-    </select>
-
     <!-- 根据书籍ID列表批量查询图书信息 -->
     <select id="selectBooksByIds" parameterType="list" resultMap="BooksResult">
         <include refid="selectBooksVo"/>
@@ -153,6 +116,5 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             #{id}
         </foreach>
     </select>
-
 
 </mapper>

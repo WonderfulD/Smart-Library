@@ -77,4 +77,15 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         WHERE library_id = #{libraryId}
           AND order_date &lt;= #{specificDay}
     </select>
+
+    <!-- 删除指定图书馆和图书ID列表的订购信息 -->
+    <delete id="deleteBookOrdersByLibraryIdAndBookIds" parameterType="map">
+        DELETE FROM book_order
+        WHERE library_id = #{libraryId}
+        AND book_id IN
+        <foreach item="bookId" collection="bookIds" open="(" separator="," close=")">
+            #{bookId}
+        </foreach>
+    </delete>
+
 </mapper>

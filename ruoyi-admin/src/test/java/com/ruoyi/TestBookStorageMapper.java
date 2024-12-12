@@ -20,4 +20,10 @@ public class TestBookStorageMapper {
         System.out.println(integers);
     }
 
+    @Test
+    void selectBookIdsByLibraryId() {
+        List<Long> bookIdsByLibraryId = bookStorageMapper.selectBookIdsByLibraryId(null);
+        System.out.println(bookIdsByLibraryId);
+    }
+
 }

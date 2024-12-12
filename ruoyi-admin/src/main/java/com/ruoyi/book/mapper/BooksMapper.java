@@ -60,11 +60,6 @@ public interface BooksMapper
     public int deleteBooksByBookIds(Long[] bookIds);
 
     /**
-     * 根据图书馆ID查询图书副本信息列表
-     */
-    public List<Books> selectBooksListByLibrary(Books books);
-
-    /**
      * 根据书籍ID列表批量查询图书信息
      * @param ids
      * @return

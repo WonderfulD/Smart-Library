@@ -1,5 +1,8 @@
 package com.ruoyi.Utils;
 
+import com.ruoyi.borrow.domain.BookBorrowing;
+
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -37,5 +40,32 @@ public class BorrowUtil {
         long timestamp = new Date().getTime();
         long randomNumber = ThreadLocalRandom.current().nextLong(1, 1000);
         return (timestamp % 100000000L) * 1000 + randomNumber;
+    }
+
+    /**
+     * 获取借阅状态
+     */
+    public static int getBorrowingStatus(BookBorrowing borrowing) {
+        if(borrowing.getReturnMethod() != null && borrowing.getReturnDate() == null) {
+            return 6;
+        }
+        if (borrowing.getPendingStatus() == 0L) {
+            return 5;       //借阅拒绝
+        } else if (borrowing.getDueDate() == null) {
+            return 4;     //待审核
+        } else if (borrowing.getReturnDate() != null) {
+            if (borrowing.getReturnDate().isBefore(borrowing.getDueDate())) {
+                return 0; //如期归还
+            } else {
+                return 2; //逾期归还
+            }
+        } else {
+            LocalDate today = LocalDate.now();
+            if (today.isBefore(borrowing.getDueDate())) {
+                return 1; //借阅正常
+            } else {
+                return 3; //逾期未还
+            }
+        }
     }
 }

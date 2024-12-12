@@ -1,7 +1,7 @@
 package com.ruoyi.borrow.controller;
 
 import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
+import com.ruoyi.Utils.BorrowUtil;
 import com.ruoyi.borrow.domain.BookBorrowing;
 import com.ruoyi.borrow.service.IBookBorrowingService;
 import com.ruoyi.common.annotation.Log;
@@ -23,7 +23,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -66,7 +65,7 @@ public class BookBorrowingController extends BaseController
         startPageByBorrowDateDesc();
         List<BookBorrowing> list = bookBorrowingService.selectBookBorrowingListByDept(bookBorrowing);
         for (BookBorrowing borrowing : list) {
-            borrowing.setStatus((long) getBorrowingStatus(borrowing));
+            borrowing.setStatus((long) BorrowUtil.getBorrowingStatus(borrowing));
         }
         return getDataTable(sortBookBorrowingsByBorrowDateDesc(list));
     }
@@ -91,36 +90,9 @@ public class BookBorrowingController extends BaseController
         bookBorrowing.setReaderId(SecurityUtils.getUserId());
         List<BookBorrowing> list = bookBorrowingService.selectBookBorrowingListByReaderId(bookBorrowing);
         for (BookBorrowing borrowing : list) {
-            borrowing.setStatus((long) getBorrowingStatus(borrowing));
+            borrowing.setStatus((long) BorrowUtil.getBorrowingStatus(borrowing));
         }
         return getDataTable(list);
-    }
-
-    /**
-     * 获取借阅状态
-     */
-    public static int getBorrowingStatus(BookBorrowing borrowing) {
-        if(borrowing.getReturnMethod() != null && borrowing.getReturnDate() == null) {
-            return 6;
-        }
-        if (borrowing.getPendingStatus() == 0L) {
-          return 5;       //借阅拒绝
-        } else if (borrowing.getDueDate() == null) {
-            return 4;     //待审核
-        } else if (borrowing.getReturnDate() != null) {
-            if (borrowing.getReturnDate().compareTo(borrowing.getDueDate()) <= 0) {
-                return 0; //如期归还
-            } else {
-                return 2; //逾期归还
-            }
-        } else {
-            LocalDate today = LocalDate.now();
-            if (today.isBefore(borrowing.getDueDate())) {
-                return 1; //借阅正常
-            } else {
-                return 3; //逾期未还
-            }
-        }
     }
 
 
