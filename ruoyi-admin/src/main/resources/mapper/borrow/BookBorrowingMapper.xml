@@ -262,4 +262,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </where>
     </select>
 
+    <select id="selectNotReturnedBooksCountByReaderIdAndBookId" parameterType="map" resultType="long">
+        SELECT COUNT(*)
+        FROM BookBorrowing
+        WHERE reader_id = #{readerId}
+          AND book_id = #{bookId}
+          AND return_date IS NULL
+    </select>
 </mapper>

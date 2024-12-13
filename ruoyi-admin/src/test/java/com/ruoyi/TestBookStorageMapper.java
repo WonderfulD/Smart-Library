@@ -26,4 +26,16 @@ public class TestBookStorageMapper {
         System.out.println(bookIdsByLibraryId);
     }
 
+    @Test
+    void reduceStockByLibraryIdAndBookId() {
+        Boolean result = bookStorageMapper.reduceStockByLibraryIdAndBookId(103L, 1L);
+        System.out.println(result);
+    }
+
+    @Test
+    void selectTotalStockByBookId() {
+        Long totalStock = bookStorageMapper.selectTotalStockByBookId(1L);
+        System.out.println(totalStock);
+    }
+
 }

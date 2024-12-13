@@ -137,4 +137,21 @@ public class BookStorageServiceImpl implements IBookStorageService
     public List<Long> selectLibraryIdsByBookId(Long bookId) {
         return bookStorageMapper.selectLibraryIdsByBookId(bookId);
     }
+
+
+    /**
+     * 使用乐观锁扣除某图书馆某本书的库存（库存减一）
+     * @param libraryId
+     * @param bookId
+     * @return
+     */
+    @Override
+    public Boolean borrowOneBookWithOLock(Long libraryId, Long bookId) {
+        return bookStorageMapper.reduceStockByLibraryIdAndBookId(libraryId, bookId);
+    }
+
+    @Override
+    public Long selectTotalStockByBookId(Long bookId) {
+        return bookStorageMapper.selectTotalStockByBookId(bookId);
+    }
 }

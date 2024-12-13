@@ -111,7 +111,6 @@
       <el-table-column label="图书分类" align="center" prop="category" />
       <el-table-column label="图书描述" align="center" prop="description" />
       <el-table-column label="版次" align="center" prop="edition" />
-      </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button

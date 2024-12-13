@@ -86,4 +86,19 @@ public interface IBookStorageService
      * @return
      */
     public List<Long> selectLibraryIdsByBookId(Long bookId);
+
+    /**
+     * 使用乐观锁扣除某图书馆某本书的库存（库存减一）
+     * @param libraryId
+     * @param bookId
+     * @return
+     */
+    public Boolean borrowOneBookWithOLock(Long libraryId, Long bookId);
+
+    /**
+     * 查询某图书的所有图书馆存货之和
+     * @param bookId
+     * @return
+     */
+    public Long selectTotalStockByBookId(Long bookId);
 }

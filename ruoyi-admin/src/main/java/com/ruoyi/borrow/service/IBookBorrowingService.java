@@ -135,4 +135,12 @@ public interface IBookBorrowingService
     public AjaxResult returnBook(BookBorrowing request);
 
     public AjaxResult confirmReturnBook(BookBorrowing request);
+
+    /**
+     * 借阅流程
+     * @param bookBorrowing
+     * @param bookId
+     * @return
+     */
+    public AjaxResult makeBorrow(BookBorrowing bookBorrowing, Long bookId);
 }

@@ -113,4 +113,6 @@ public interface BookBorrowingMapper
      * @return
      */
     public List<BookBorrowing> selectBookBorrowingListWithReturnPending(BookBorrowing bookBorrowing);
+
+    public Long selectNotReturnedBooksCountByReaderIdAndBookId(@Param("readerId") Long readerId, @Param("bookId") Long bookId);
 }

@@ -1,5 +1,8 @@
 package com.ruoyi.Utils;
 
+import cn.hutool.core.lang.Snowflake;
+import cn.hutool.core.lang.UUID;
+import cn.hutool.core.util.IdUtil;
 import com.ruoyi.borrow.domain.BookBorrowing;
 
 import java.time.LocalDate;
@@ -36,10 +39,9 @@ public class BorrowUtil {
      * @return
      */
     public static Long generateBorrowId() {
-        //设置borrowId为日期+随机数
-        long timestamp = new Date().getTime();
-        long randomNumber = ThreadLocalRandom.current().nextLong(1, 1000);
-        return (timestamp % 100000000L) * 1000 + randomNumber;
+        Snowflake snowflake = IdUtil.createSnowflake(1, 1);
+        // 生成一个唯一ID
+        return snowflake.nextId();
     }
 
     /**

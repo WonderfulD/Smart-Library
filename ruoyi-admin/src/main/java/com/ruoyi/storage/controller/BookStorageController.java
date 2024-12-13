@@ -23,7 +23,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
 
 /**
  * 图书库存Controller
- * 
+ *
  * @author ruoyi
  * @date 2024-12-10
  */
@@ -37,7 +37,7 @@ public class BookStorageController extends BaseController
     /**
      * 查询图书库存列表
      */
-    @PreAuthorize("@ss.hasPermi('storage:BookStorage:list')")
+//    @PreAuthorize("@ss.hasPermi('storage:BookStorage:list')")
     @GetMapping("/list")
     public TableDataInfo list(BookStorage bookStorage)
     {
@@ -49,7 +49,7 @@ public class BookStorageController extends BaseController
     /**
      * 导出图书库存列表
      */
-    @PreAuthorize("@ss.hasPermi('storage:BookStorage:export')")
+//    @PreAuthorize("@ss.hasPermi('storage:BookStorage:export')")
     @Log(title = "图书库存", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
     public void export(HttpServletResponse response, BookStorage bookStorage)
@@ -62,7 +62,7 @@ public class BookStorageController extends BaseController
     /**
      * 获取图书库存详细信息
      */
-    @PreAuthorize("@ss.hasPermi('storage:BookStorage:query')")
+//    @PreAuthorize("@ss.hasPermi('storage:BookStorage:query')")
     @GetMapping(value = "/{storageId}")
     public AjaxResult getInfo(@PathVariable("storageId") Long storageId)
     {
@@ -72,7 +72,7 @@ public class BookStorageController extends BaseController
     /**
      * 新增图书库存
      */
-    @PreAuthorize("@ss.hasPermi('storage:BookStorage:add')")
+//    @PreAuthorize("@ss.hasPermi('storage:BookStorage:add')")
     @Log(title = "图书库存", businessType = BusinessType.INSERT)
     @PostMapping
     public AjaxResult add(@RequestBody BookStorage bookStorage)
@@ -83,7 +83,7 @@ public class BookStorageController extends BaseController
     /**
      * 修改图书库存
      */
-    @PreAuthorize("@ss.hasPermi('storage:BookStorage:edit')")
+//    @PreAuthorize("@ss.hasPermi('storage:BookStorage:edit')")
     @Log(title = "图书库存", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody BookStorage bookStorage)
@@ -94,7 +94,7 @@ public class BookStorageController extends BaseController
     /**
      * 删除图书库存
      */
-    @PreAuthorize("@ss.hasPermi('storage:BookStorage:remove')")
+//    @PreAuthorize("@ss.hasPermi('storage:BookStorage:remove')")
     @Log(title = "图书库存", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{storageIds}")
     public AjaxResult remove(@PathVariable Long[] storageIds)

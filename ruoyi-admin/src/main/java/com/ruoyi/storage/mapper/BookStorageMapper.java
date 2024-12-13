@@ -82,5 +82,19 @@ public interface BookStorageMapper
      */
     public List<Long> selectLibraryIdsByBookId(Long bookId);
 
-//    public List<Long> selectStockListByLibraryId(Long libraryId);
+    /**
+     * 乐观锁解决超借问题
+     * 根据图书馆ID、图书ID锁定库存记录
+     * @param libraryId
+     * @param bookId
+     * @return
+     */
+    public Boolean reduceStockByLibraryIdAndBookId(@Param("libraryId")Long libraryId, @Param("bookId") Long bookId);
+
+    /**
+     * 查询某图书的所有图书馆存货之和
+     * @param bookId
+     * @return
+     */
+    public Long selectTotalStockByBookId(@Param("bookId") Long bookId);
 }

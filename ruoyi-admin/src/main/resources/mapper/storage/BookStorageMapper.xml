@@ -96,4 +96,24 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         FROM book_storage
         WHERE book_id = #{bookId}
     </select>
+
+    <!-- 根据图书馆ID、图书ID锁定库存记录，库存减一 -->
+    <update id="reduceStockByLibraryIdAndBookId" parameterType="map">
+        UPDATE book_storage
+        SET
+        stock = stock - 1
+        <where>
+            <if test="bookId != null"> AND book_id = #{bookId}</if>
+            <if test="libraryId != null"> AND library_id = #{libraryId}</if>
+            AND stock > 0
+        </where>
+    </update>
+
+    <!-- 查询某图书的所有图书馆存货之和 -->
+    <select id="selectTotalStockByBookId" parameterType="Long" resultType="Long">
+        SELECT SUM(stock)
+        FROM book_storage
+        WHERE book_id = #{bookId}
+    </select>
+
 </mapper>

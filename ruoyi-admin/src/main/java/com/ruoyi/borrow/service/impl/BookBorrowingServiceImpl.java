@@ -7,6 +7,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 
 import com.ruoyi.Utils.BorrowUtil;
 import com.ruoyi.book.domain.Books;
@@ -15,6 +16,8 @@ import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.storage.domain.BookStorage;
 import com.ruoyi.storage.service.IBookStorageService;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ruoyi.borrow.mapper.BookBorrowingMapper;
@@ -22,6 +25,8 @@ import com.ruoyi.borrow.domain.BookBorrowing;
 import com.ruoyi.borrow.service.IBookBorrowingService;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
+
+import static com.ruoyi.RedisConstants.BOOK_BORROW_LOCK;
 
 /**
  * 图书借阅信息Service业务层处理
@@ -41,6 +46,12 @@ public class BookBorrowingServiceImpl implements IBookBorrowingService
 
     @Autowired
     private IBookStorageService bookStorageService;
+
+    @Autowired
+    private RedissonClient redissonClient;
+
+    @Autowired
+    private IBookBorrowingService bookBorrowingService;
 
     /**
      * 查询图书借阅信息
@@ -226,78 +237,110 @@ public class BookBorrowingServiceImpl implements IBookBorrowingService
 
     /**
      * 处理图书借阅
+     * 乐观锁解决超借
+     * Redisson锁解决“读者无法在未归还某图书前再次借阅该图书”
      * @param bookBorrowing
      * @return
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public AjaxResult borrowBook(BookBorrowing bookBorrowing) {
-        try {
-            Long bookId = bookBorrowing.getBookId();
+        Long bookId = bookBorrowing.getBookId();
+        Long readerId = bookBorrowing.getReaderId();
 
+        //获取Redisson分布式锁
+        String lockKey = BOOK_BORROW_LOCK + ":" + readerId + ":" + bookId;
+        RLock lock = redissonClient.getLock(lockKey);
+
+        //尝试获取锁
+        boolean locked = lock.tryLock();
+
+        if (!locked) {
+            //未获取到锁
+            return AjaxResult.error("无法借阅，有一本相同图书未归还");
+        }
+        try {
             // 先检查图书是否存在
             Books book = booksService.selectBooksByBookId(bookId);
             if (book == null) {
                 return AjaxResult.error("图书不存在");
             }
-
             //检查图书是否还有存货
-            List<Long> libraryIds = bookStorageService.selectLibraryIdsByBookId(bookId);
-            if (libraryIds.isEmpty()) {
+            Long bookTotalStock = bookStorageService.selectTotalStockByBookId(bookId);
+            if (bookTotalStock < 1L) {
                 //没有存货了
                 return AjaxResult.error("所选图书已全部借出");
             }
-
-            //随机选择一家图书馆
-            int randomIndex = ThreadLocalRandom.current().nextInt(libraryIds.size());
-            Long libraryId = libraryIds.get(randomIndex);
-
-            // 创建并保存借阅记录
-            Long readerId = bookBorrowing.getReaderId();
-            LocalDate borrowDate = bookBorrowing.getBorrowDate();
-            Long borrowMethod = bookBorrowing.getBorrowMethod();
-            Long borrowId = BorrowUtil.generateBorrowId();
-
-            BookBorrowing insertBookBorrowing = new BookBorrowing();
-            insertBookBorrowing.setBookId(bookId);
-            insertBookBorrowing.setLibraryId(libraryId);
-            insertBookBorrowing.setReaderId(readerId);
-            insertBookBorrowing.setBorrowDate(borrowDate);
-            insertBookBorrowing.setBorrowMethod(borrowMethod);
-            insertBookBorrowing.setBorrowId(borrowId);
-            //设置借阅状态待审核
-            insertBookBorrowing.setPendingStatus(2L);
-            //设置借阅备注
-            String comments = null;
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            String formattedDate = borrowDate.format(formatter);
-            if (borrowMethod == 0L) {  //到馆
-                comments = "到馆取阅, 取阅时间为: " + formattedDate;
-            } else if (borrowMethod == 1L) {
-                comments = "邮寄取阅, 邮寄地址为: " + insertBookBorrowing.getComments();
-
-            }
-            insertBookBorrowing.setComments(comments);
-            insertBookBorrowing(insertBookBorrowing);
-
-            //减去库存
-            BookStorage bookStorage = new BookStorage();
-            bookStorage.setBookId(bookId);
-            bookStorage.setLibraryId(libraryId);
-            List<BookStorage> bookStorageList = bookStorageService.selectBookStorageList(bookStorage);
-            BookStorage updateBookStorage = bookStorageList.get(0);
-            Long stock = updateBookStorage.getStock();
-            updateBookStorage.setStock(stock - 1);
-            bookStorageService.updateBookStorage(updateBookStorage);
-            return AjaxResult.success("借阅成功，待审核");
+            //获取了锁
+            return bookBorrowingService.makeBorrow(bookBorrowing, bookId);
         } catch (Exception e) {
-            // 记录异常日志
-            log.info("借阅处理失败，回滚\n错误信息{}", e.getMessage());
-            // 手动设置事务回滚
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            // 返回错误信息
-            return AjaxResult.error("借阅失败，请联系管理员或稍后再试");
+            throw new RuntimeException(e);
+        } finally {
+            //释放锁
+            if (lock.isHeldByCurrentThread()) {
+                lock.unlock();
+            }
         }
+    }
+
+    /**
+     * 借阅流程
+     * @param bookBorrowing
+     * @param bookId
+     * @return
+     */
+    @Override
+    @Transactional
+    public AjaxResult makeBorrow(BookBorrowing bookBorrowing, Long bookId) {
+        //判断是否已经有一本相同图书未归还
+        Long readerId = bookBorrowing.getReaderId();
+        Long notReturnedBooksCount = bookBorrowingMapper.selectNotReturnedBooksCountByReaderIdAndBookId(readerId, bookId);
+
+        if (notReturnedBooksCount > 0L) {
+            //已经有一本相同图书未归还
+            return AjaxResult.error("无法借阅，有一本相同图书未归还");
+        }
+
+        //没有同一本尚未归还的图书
+        //随机选择一家图书馆
+        List<Long> libraryIds = bookStorageService.selectLibraryIdsByBookId(bookId);
+        int randomIndex = ThreadLocalRandom.current().nextInt(libraryIds.size());
+        Long libraryId = libraryIds.get(randomIndex);
+
+        //减去库存，乐观锁，判断库存大于0时才减去库存
+        Boolean updated = bookStorageService.borrowOneBookWithOLock(libraryId, bookId);
+
+        if (!updated) {
+            //减库存不成功，已经卖完
+            return AjaxResult.error("所选图书已全部借出");
+        }
+
+        // 创建并保存借阅记录
+        LocalDate borrowDate = bookBorrowing.getBorrowDate();
+        Long borrowMethod = bookBorrowing.getBorrowMethod();
+        Long borrowId = BorrowUtil.generateBorrowId();
+        BookBorrowing insertBookBorrowing = new BookBorrowing();
+        insertBookBorrowing.setBookId(bookId);
+        insertBookBorrowing.setLibraryId(libraryId);
+        insertBookBorrowing.setReaderId(readerId);
+        insertBookBorrowing.setBorrowDate(borrowDate);
+        insertBookBorrowing.setBorrowMethod(borrowMethod);
+        insertBookBorrowing.setBorrowId(borrowId);
+        //设置借阅状态待审核
+        insertBookBorrowing.setPendingStatus(2L);
+        //设置借阅备注
+        String comments = null;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        String formattedDate = borrowDate.format(formatter);
+        if (borrowMethod == 0L) {  //到馆
+            comments = "到馆取阅, 取阅时间为: " + formattedDate;
+        } else if (borrowMethod == 1L) {
+            comments = "邮寄取阅, 邮寄地址为: " + insertBookBorrowing.getComments();
+
+        }
+        insertBookBorrowing.setComments(comments);
+        insertBookBorrowing(insertBookBorrowing);
+
+        return AjaxResult.success("借阅成功，待审核");
     }
 
 
