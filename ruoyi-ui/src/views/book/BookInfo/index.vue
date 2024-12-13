@@ -49,16 +49,6 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="借阅状态" prop="status">
-        <el-select v-model="queryParams.status" placeholder="请选择借阅状态" clearable>
-          <el-option
-            v-for="dict in dict.type.borrow_status"
-            :key="dict.value"
-            :label="dict.label"
-            :value="dict.value"
-          />
-        </el-select>
-      </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
@@ -121,10 +111,6 @@
       <el-table-column label="图书分类" align="center" prop="category" />
       <el-table-column label="图书描述" align="center" prop="description" />
       <el-table-column label="版次" align="center" prop="edition" />
-      <el-table-column label="借阅状态" align="center" prop="status">
-        <template slot-scope="scope">
-          <dict-tag :options="dict.type.borrow_status" :value="scope.row.status"/>
-        </template>
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
@@ -237,7 +223,6 @@ import {getToken} from "@/utils/auth";
 
 export default {
   name: "BookInfo",
-  dicts: ['borrow_status'],
   data() {
     return {
       // 遮罩层
@@ -276,7 +261,6 @@ export default {
         isbn: null,
         publisher: null,
         category: null,
-        status: null
       },
       // 表单参数
       form: {},
@@ -356,9 +340,9 @@ export default {
         pages: null,
         coverUrl: null,
         edition: null,
-        status: null,
         summary: null,
-        amount: null
+        amount: null,
+        stock: null
       };
       this.resetForm("form");
     },

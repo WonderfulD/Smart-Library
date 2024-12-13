@@ -118,7 +118,7 @@ public class BooksController extends BaseController
     @GetMapping("/totalBooksCount")
     public AjaxResult getTotalBooksCountByLibraryId() {
         Integer count = bookOrderService.selectTotalAmountByLibraryIdAndDate(SecurityUtils.getDeptId(), LocalDate.now());
-        return AjaxResult.success(count);
+        return AjaxResult.success(count == null ? 0 : count);
     }
 
     /**
@@ -151,7 +151,7 @@ public class BooksController extends BaseController
     }
 
     /**
-     * 根据图书馆ID查询最近藏书量
+     * 根据图书馆ID查询最近藏书量列表和预计藏书量列表
      */
     @GetMapping("/listRecentBooks")
     public AjaxResult listRecentBooks() throws Exception {
@@ -173,7 +173,7 @@ public class BooksController extends BaseController
 
 
     /**
-     * 根据图书馆ID查询最近借阅量
+     * 根据图书馆ID查询最近借阅量列表和预计借阅量列表
      */
     @GetMapping("/listRecentBorrows")
     public AjaxResult listRecentBorrows() throws Exception {

@@ -184,17 +184,18 @@ public class BookBorrowingServiceImpl implements IBookBorrowingService
     public AjaxResult handleExtension(BookBorrowing request) {
         try {
             Long bookId = request.getBookId();
+
             // 先检查图书是否存在
             Books book = booksService.selectBooksByBookId(bookId);
             if (book == null) {
                 return AjaxResult.error("图书不存在");
             }
             // 检查图书是否已归还
-            if (book.getStatus() == 1) {
-                return AjaxResult.error("图书已归还");
-            }else if (book.getStatus() == 2) {
-                return AjaxResult.error("当前无法完成此操作");
+            BookBorrowing checkBookBorrowing = selectBookBorrowingByBorrowId(request.getBorrowId());
+            if (checkBookBorrowing.getReturnDate() != null) {
+                return AjaxResult.error("操作失败，图书已归还");
             }
+
             Long borrowId = request.getBorrowId();
             //检查是否已逾期
             LocalDate dueDate = request.getDueDate();

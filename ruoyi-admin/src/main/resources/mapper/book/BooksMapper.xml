@@ -17,12 +17,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="pages"    column="pages"    />
         <result property="coverUrl"    column="cover_url"    />
         <result property="edition"    column="edition"    />
-        <result property="status"    column="status"    />
         <result property="summary"    column="summary"    />
     </resultMap>
 
     <sql id="selectBooksVo">
-        select book_id, title, author, isbn, publisher, publish_date, category, description, language, pages, cover_url, edition, status, summary from Books
+        select book_id, title, author, isbn, publisher, publish_date, category, description, language, pages, cover_url, edition, summary from Books
     </sql>
 
     <select id="selectBooksList" parameterType="Books" resultMap="BooksResult">
@@ -34,7 +33,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="isbn != null  and isbn != ''"> and isbn = #{isbn}</if>
             <if test="publisher != null  and publisher != ''"> and publisher = #{publisher}</if>
             <if test="category != null  and category != ''"> and category = #{category}</if>
-            <if test="status != null "> and status = #{status}</if>
         </where>
     </select>
 
@@ -57,7 +55,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="pages != null">pages,</if>
             <if test="coverUrl != null">cover_url,</if>
             <if test="edition != null">edition,</if>
-            <if test="status != null">status,</if>
             <if test="summary != null">summary,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
@@ -72,7 +69,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="pages != null">#{pages},</if>
             <if test="coverUrl != null">#{coverUrl},</if>
             <if test="edition != null">#{edition},</if>
-            <if test="status != null">#{status},</if>
             <if test="summary != null">#{summary},</if>
          </trim>
     </insert>
@@ -91,7 +87,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="pages != null">pages = #{pages},</if>
             <if test="coverUrl != null">cover_url = #{coverUrl},</if>
             <if test="edition != null">edition = #{edition},</if>
-            <if test="status != null">status = #{status},</if>
             <if test="summary != null">summary = #{summary},</if>
         </trim>
         where book_id = #{bookId}

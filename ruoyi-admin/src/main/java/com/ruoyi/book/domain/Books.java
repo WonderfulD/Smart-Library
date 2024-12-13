@@ -85,10 +85,6 @@ public class Books extends BaseEntity {
     @Excel(name = "版次")
     private String edition;
 
-    /**
-     * 借阅状态
-     */
-    private Long status;
 
     /**
      * 简介
@@ -192,14 +188,6 @@ public class Books extends BaseEntity {
         this.edition = edition;
     }
 
-    public Long getStatus() {
-        return status;
-    }
-
-    public void setStatus(Long status) {
-        this.status = status;
-    }
-
     public String getSummary() {
         return summary;
     }
@@ -223,7 +211,6 @@ public class Books extends BaseEntity {
                 ", pages=" + pages +
                 ", coverUrl='" + coverUrl + '\'' +
                 ", edition='" + edition + '\'' +
-                ", status=" + status +
                 ", summary='" + summary + '\'' +
                 '}';
     }

@@ -73,6 +73,11 @@ public interface IBookStorageService
      */
     public List<Long> selectBookIdsByLibraryId(Long libraryId);
 
+    /**
+     * 根据图书馆ID和图书ID列表删除图书库存记录
+     * @param libraryId
+     * @param bookIds
+     */
     public void deleteBookStorageByLibraryIdAndBookIds(Long libraryId, Long[] bookIds);
 
     /**

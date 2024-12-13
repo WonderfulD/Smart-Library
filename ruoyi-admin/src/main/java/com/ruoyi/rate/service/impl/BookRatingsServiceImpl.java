@@ -242,8 +242,6 @@ public class BookRatingsServiceImpl implements IBookRatingsService {
 
 
     /**
-     * TODO
-     * 尚未测试
      * 根据图书馆Id查询藏书总体评分列表
      *
      * @param libraryId 图书馆ID，若为null则查询所有图书
@@ -288,16 +286,7 @@ public class BookRatingsServiceImpl implements IBookRatingsService {
             List<Map<String, Object>> responseList = new ArrayList<>();
 
             for (Long bookId : filteredBookIds) {
-                // 查询当前图书的所有评分记录
-                BookRatings queryBookRatings = new BookRatings();
-                queryBookRatings.setBookId(bookId);
-                List<BookRatings> list = selectBookRatingsList(queryBookRatings);
-
-                // 计算平均评分
-                double averageRating = list.stream()
-                        .mapToDouble(BookRatings::getRating)
-                        .average()
-                        .orElse(0.0);
+                double averageRating = Double.parseDouble(getRating(bookId));
 
                 // 获取图书详细信息
                 Books bookInfo = booksService.selectBooksByBookId(bookId);
@@ -316,7 +305,6 @@ public class BookRatingsServiceImpl implements IBookRatingsService {
                 bookDetails.put("pages", bookInfo.getPages());
                 bookDetails.put("coverUrl", bookInfo.getCoverUrl());
                 bookDetails.put("edition", bookInfo.getEdition());
-                bookDetails.put("status", bookInfo.getStatus());
                 bookDetails.put("averageRating", averageRating);
 
                 responseList.add(bookDetails);

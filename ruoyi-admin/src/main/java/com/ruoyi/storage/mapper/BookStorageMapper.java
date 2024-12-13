@@ -75,5 +75,12 @@ public interface BookStorageMapper
      */
     public List<Long> selectBookIdsByLibraryId(@Param("libraryId") Long libraryId);
 
+    /**
+     * 获取某图书的图书馆ID列表
+     * @param bookId 图书id
+     * @return
+     */
     public List<Long> selectLibraryIdsByBookId(Long bookId);
+
+//    public List<Long> selectStockListByLibraryId(Long libraryId);
 }

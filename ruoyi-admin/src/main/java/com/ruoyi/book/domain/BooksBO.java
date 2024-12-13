@@ -15,11 +15,6 @@ public class BooksBO extends BaseEntity {
     private Long bookId;
 
     /**
-     * 图书馆ID
-     */
-    private Long libraryId;
-
-    /**
      * 书名
      */
     private String title;
@@ -92,14 +87,6 @@ public class BooksBO extends BaseEntity {
 
     public void setBookId(Long bookId) {
         this.bookId = bookId;
-    }
-
-    public Long getLibraryId() {
-        return libraryId;
-    }
-
-    public void setLibraryId(Long libraryId) {
-        this.libraryId = libraryId;
     }
 
     public String getTitle() {
@@ -218,7 +205,6 @@ public class BooksBO extends BaseEntity {
     public String toString() {
         return "BooksStorage{" +
                 "bookId=" + bookId +
-                ", libraryId=" + libraryId +
                 ", title='" + title + '\'' +
                 ", author='" + author + '\'' +
                 ", isbn='" + isbn + '\'' +

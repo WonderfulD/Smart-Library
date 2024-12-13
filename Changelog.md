@@ -6,6 +6,9 @@
 
 ### 新增
 - 对更多的功能添加缓存
+- 实现借阅人只能同时借阅一本相同的图书
+- 解决图书超借问题
+- 新增图书馆管理员端`藏书管理`菜单中`库存管理`页面
 
 ### 变更
 - 删除`Books`表中`status`字段
@@ -13,11 +16,34 @@
 - 借阅ID考虑使用UUID替代项目实现的方法
 
 ### 修复
-- 修复`Books`表某条记录不全时，可能导致的显示问题。
+- `根据图书馆Id查询藏书总体评分列表`接口的缓存需要随着数据库中图书评分记录的更新而更新
 
 ### 其他
 - 优化数据库查询性能。
-- `Books`表中`status`字段是否可删除待验证
+
+## [0.1.1] - 2024-12-13
+
+### 新增
+- 无
+
+### 变更
+- **删除`Books`实体类中`status`字段及相关方法**
+- 删除了`BooksMapper`XML文件中关于`status`的字段和方法中的语句
+- 删除`BooksBO`实体类中`status`字段及相关方法
+- 删除`BooksBO`实体类中`libraryId`字段及相关方法
+- 删除了图书馆管理员`藏书管理`菜单中`图书信息`页面的表格中`借阅状态`列
+- 删除了图书馆管理员`藏书管理`菜单中`图书信息`页面的`借阅状态`筛选项
+
+### 修复
+- 查询藏书总体评分接口
+  -  查询不到图书评分记录时，默认总体评分为0
+- 根据图书馆ID查询总藏书量接口
+  -  无法获取结果时，默认值为0（修复了平台管理员的控制台页面中藏书量panel显示错误问题）
+- 根据图书馆Id查询藏书总体评分列表接口
+  - 修复了书本总体评分为小数时，不能保留一位小数的问题
+
+### 其他
+- 无
 
 ## [0.1.0] - 2024-12-12
 
@@ -29,11 +55,9 @@
 - 前端function`getTotalBooksCountByLibraryId`，根据当前登录管理员所在图书馆id（部门id）查询总藏书量
 
 ### 变更
-- 删除`Books`表中`status`字段
-- 删除`Books`表中`library_id`字段
 - 删除了`预估未来七天的借阅量`方法`estimateFutureBorrowCounts`
 - **删除了`Books`实体类中关于`libraryId`的字段和方法**
-- 删除了`BooksMapper`XML文件中关于`libraryId`的字段和方法中的语句
+- 删除了`BooksMapper`XML文件中关于`library_id`的字段和方法中的语句
 - 删除了`BooksMapper`XML文件中`selectBooksListByLibrary`方法
 - 删除了`BooksMapper`中`根据图书馆ID查询图书副本信息列表`方法`selectBooksListByLibrary`
 - 删除了`IBooksService`及其实现类`BooksServiceImpl`中`根据图书馆ID查询图书副本信息列表`方法`selectBooksListByLibrary`
